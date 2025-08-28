@@ -1,135 +1,119 @@
-# Turborepo starter
+# Stockholm IMS
 
-This Turborepo starter is maintained by the Turborepo core team.
+Monorepo for Stockholm — a lightweight Inventory Management System built with Next.js, React, and Prisma. It provides an authenticated dashboard to manage items, low‑stock alerts, camera barcode/QR scanning, and PDF export.
 
-## Using this example
+## Apps
 
-Run the following command:
+- `apps/dashboard`: Authenticated admin dashboard (Next.js App Router) for managing inventory, low‑stock monitoring, barcode/QR scanning, and exports.
+- `apps/website`: Public site (placeholder). Useful for landing/marketing.
 
-```sh
-npx create-turbo@latest
+## Packages
+
+- `@stockholm/db`: Prisma client + schema for PostgreSQL.
+- `@stockholm/ui`: Shared UI components.
+- `@stockholm/utils`: Small shared utilities.
+- `eslint-config`, `typescript-config`, `config`: Shared configs for the monorepo.
+
+## Tech Stack
+
+- Next.js 15 (App Router) + React 19
+- NextAuth (credentials, JWT sessions)
+- Prisma 5 + PostgreSQL 16
+- Turborepo + pnpm workspaces
+- Tailwind CSS 4, Zod, pdf-lib, ZXing
+
+## Features
+
+- Items CRUD with optional photo upload stored under `apps/dashboard/public/uploads`.
+- Low‑stock badge with cached count and revalidation.
+- Built‑in camera scanning for Barcode/QR to prefill SKU.
+- Export inventory as PDF.
+- Credentials login and basic role handling (ADMIN/MEMBER) with middleware protection.
+
+Relevant references:
+
+- Dashboard home: `apps/dashboard/src/app/page.tsx:1`
+- Items list + low‑stock UI: `apps/dashboard/src/app/app/items/page.tsx:1`
+- New item form + upload: `apps/dashboard/src/app/app/items/new/NewItemClient.tsx:1`
+- Low‑stock API: `apps/dashboard/src/app/api/low-stock/count/route.ts:1`
+- PDF export API: `apps/dashboard/src/app/api/exports/items/route.ts:1`
+- Auth + middleware: `apps/dashboard/src/lib/auth.ts:1`, `apps/dashboard/src/middleware.ts:1`
+- Prisma schema: `packages/db/prisma/schema.prisma:1`
+
+## Getting Started
+
+Prerequisites:
+
+- Node.js >= 18 and pnpm >= 9
+- Docker (for local PostgreSQL) or an accessible Postgres instance
+
+1) Clone and install dependencies
+
+```bash
+pnpm install
 ```
 
-## What's inside?
+2) Start PostgreSQL (dev)
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```bash
+docker compose -f infra/docker-compose.dev.yml up -d
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+3) Configure environment
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+Create a `.env` in repo root (example):
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```env
+DATABASE_URL=postgres://stockholm:stockholm@localhost:5433/stockholm
+NEXTAUTH_SECRET=<generate strong secret>
+NEXTAUTH_URL=http://localhost:3000
+# Optional: protect low-stock cron endpoint in non-local envs
+LOW_STOCK_CRON_TOKEN=<set-a-random-token>
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+4) Generate Prisma client and run migrations
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```bash
+pnpm prisma:generate
+pnpm prisma:migrate:dev
 ```
 
-### Remote Caching
+5) Seed an admin user (optional but recommended)
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+```bash
+# Defaults: email=admin@stockholm.local password=admin123 role=ADMIN
+pnpm -F dashboard run seed
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+# Or provide your own
+pnpm -F dashboard run seed --email=you@example.com --password=strongpass --role=ADMIN
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+6) Run the apps in development
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+```bash
+pnpm dev
 ```
 
-## Useful Links
+Open:
 
-Learn more about the power of Turborepo:
+- Dashboard: http://localhost:3000 (login at `/login`)
+- Website: http://localhost:3001
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+## Common Tasks
+
+- Build all: `pnpm build`
+- Lint all: `pnpm lint`
+- Typecheck: `pnpm check-types`
+- Prisma Studio: `pnpm prisma:studio`
+
+## Cron for Low Stock
+
+An hourly cron is configured for Vercel to compute low‑stock and refresh cache (`vercel.json`). If you secure it, set `LOW_STOCK_CRON_TOKEN` and call with `Authorization: Bearer <token>`.
+
+- Endpoint: `GET /api/cron/low-stock` — `apps/dashboard/src/app/api/cron/low-stock/route.ts:1`
+
+## Notes
+
+- Uploaded photos are stored under `apps/dashboard/public/uploads` and removed on item delete.
+- Roles: middleware restricts `/app/admin/*` to `ADMIN` if such routes are added.
+- This is a monorepo; scripts are wired via Turbo and pnpm workspaces.
