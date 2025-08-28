@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stockholm
+      POSTGRES_PASSWORD: stockholm
+      POSTGRES_DB: stockholm
+    ports:
+      - "5433:5432" # <— ganti ini
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+volumes:
+  dbdata: {}

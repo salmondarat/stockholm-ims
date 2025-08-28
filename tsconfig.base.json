@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@stockholm/db": ["packages/db/src/index.ts"],
+      "@stockholm/db/*": ["packages/db/src/*"]
+    }
+  }
+}
