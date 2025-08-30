@@ -19,17 +19,63 @@ model User {
 }
 
 model Item {
-  id                 String    @id @default(uuid()) @db.Uuid
-  name               String
-  sku                String?
-  quantity           Int       @default(0)
-  location           String?
-  condition          String?
-  photoUrl           String?   @map("photo_url")
-  tags               Json?
-  lowStockThreshold  Int       @default(0) @map("low_stock_threshold")
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
+  id                String          @id @default(cuid())
+  name              String
+  sku               String?         @unique
+  quantity          Int             @default(0)
+  locationId        String?
+  location          Location?       @relation(fields: [locationId], references: [id])
+  condition         String?
+  lowStockThreshold Int             @default(0)
+  images            ItemImage[]
+  attributes        ItemAttribute[]
+  batches           ItemBatch[]
+  serials           SerialNumber[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
 
-  @@map("items")
+model Location {
+  id        String     @id @default(cuid())
+  name      String
+  parentId  String?
+  parent    Location?  @relation("LocationToLocation", fields: [parentId], references: [id])
+  children  Location[] @relation("LocationToLocation")
+  items     Item[]
+}
+
+model ItemImage {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id])
+  url       String
+  key       String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ItemAttribute {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id])
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+}
+
+model ItemBatch {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id])
+  batchNo   String
+  qty       Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model SerialNumber {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id])
+  serial    String   @unique
+  createdAt DateTime @default(now())
 }

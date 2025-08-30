@@ -110,7 +110,7 @@ export async function createItemAction(
         location: parsed.location ?? null,
         condition: parsed.condition ?? null,
         lowStockThreshold: parsed.lowStockThreshold,
-        tags: tagsArray,
+        tags: tagsArray ?? undefined,
         photoUrl: photoUrl ?? null,
       },
       select: { id: true },
