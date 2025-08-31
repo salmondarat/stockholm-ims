@@ -25,9 +25,11 @@ function SubmitButton() {
 export default function NewItemClient({
   initialSku = "",
   s3Enabled = false,
+  categories = [],
 }: {
   initialSku?: string;
   s3Enabled?: boolean;
+  categories?: Array<{ id: string; name: string; parentId: string | null }>;
 }) {
   const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -38,6 +40,10 @@ export default function NewItemClient({
   const [storage, setStorage] = useState<"local" | "s3">(
     s3Enabled ? "s3" : "local"
   );
+  const parents = categories.filter((c) => !c.parentId);
+  const [parentId, setParentId] = useState<string>(parents[0]?.id ?? "");
+  const [childId, setChildId] = useState<string>("");
+  const children = categories.filter((c) => c.parentId === parentId);
 
   useEffect(() => {
     if (state.ok) setShowDialog(true);
@@ -109,6 +115,52 @@ export default function NewItemClient({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
+            <label className="block text-sm mb-1">Price</label>
+            <input
+              type="number"
+              name="price"
+              step="0.01"
+              min={0}
+              className="w-full border rounded px-3 py-2"
+              placeholder="e.g. 199.99"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Category</label>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                className="border rounded px-2 py-2"
+                value={parentId}
+                onChange={(e) => {
+                  setParentId(e.target.value);
+                  setChildId("");
+                }}
+              >
+                {parents.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="border rounded px-2 py-2"
+                value={childId}
+                onChange={(e) => setChildId(e.target.value)}
+              >
+                <option value="">(None)</option>
+                {children.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <input type="hidden" name="categoryId" value={childId || parentId || ""} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
             <label className="block text-sm mb-1">Location</label>
             <input
               name="location"
@@ -135,6 +187,17 @@ export default function NewItemClient({
           <p className="text-xs text-gray-500 mt-1">
             <code>cable, usb-c, black</code>
           </p>
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">Options (JSON)</label>
+          <textarea
+            name="options"
+            className="w-full border rounded px-3 py-2 font-mono text-xs"
+            rows={4}
+            placeholder='e.g. {"color":["Black","White"],"size":["S","M","L"]}'
+          />
+          <p className="text-xs text-gray-500 mt-1">Define customizable options like color/size.</p>
         </div>
 
         {/* Upload multiple media (images) */}

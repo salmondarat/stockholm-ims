@@ -27,6 +27,13 @@ model Item {
   condition         String?
   photoUrl          String?  @map("photo_url")
   tags              Json?
+  // Pricing
+  price             Decimal? @db.Decimal(10, 2)
+  // Optional structured options (e.g., { color: ["red","blue"], size: ["S","M"] })
+  options           Json?
+  // Category (subcategory) assignment
+  categoryId        String?  @db.Uuid @map("category_id")
+  category          Category? @relation(fields: [categoryId], references: [id])
   lowStockThreshold Int      @default(0) @map("low_stock_threshold")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
@@ -37,6 +44,19 @@ model Item {
   @@map("items")
 }
 
+model Category {
+  id         String     @id @default(uuid()) @db.Uuid
+  name       String
+  slug       String     @unique
+  parentId   String?    @db.Uuid @map("parent_id")
+  parent     Category?  @relation("CategoryChildren", fields: [parentId], references: [id])
+  children   Category[] @relation("CategoryChildren")
+  items      Item[]
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@index([parentId], map: "idx_categories_parent_id")
+  @@map("categories")
+}
 model ItemMedia {
   id         String   @id @default(uuid()) @db.Uuid
   itemId     String   @db.Uuid @map("item_id")

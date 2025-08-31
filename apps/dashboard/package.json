@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed-admin.ts",
+    "seed:items": "tsx scripts/seed-items.ts",
+    "seed:categories": "tsx scripts/seed-categories.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prisma": "prisma",
     "generate": "prisma generate --schema ../../packages/db/prisma/schema.prisma",

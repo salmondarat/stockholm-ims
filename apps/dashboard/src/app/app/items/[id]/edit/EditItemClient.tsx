@@ -23,6 +23,10 @@ export default function EditItemClient({
   item,
   media,
   primaryPhotoUrl = null,
+  price = 0,
+  categoryId = "",
+  optionsJson = "",
+  categories = [],
   s3Enabled = false,
 }: {
   item: {
@@ -37,6 +41,10 @@ export default function EditItemClient({
   };
   media: Array<{ id: string; url: string }>;
   primaryPhotoUrl?: string | null;
+  price?: number;
+  categoryId?: string;
+  optionsJson?: string;
+  categories?: Array<{ id: string; name: string; parentId: string | null }>;
   s3Enabled?: boolean;
 }) {
   const [state, formAction] = useActionState<UpdateItemState, FormData>(updateItemAction, { ok: false });
@@ -48,6 +56,12 @@ export default function EditItemClient({
     media.find((m) => m.url === primaryPhotoUrl)?.id || media[0]?.id || null
   );
   const [showSaved, setShowSaved] = useState(false);
+
+  const parents = categories.filter((c) => !c.parentId);
+  const initialParent = categories.find((c) => c.id === (categoryId || ""))?.parentId || parents[0]?.id || "";
+  const [parentId, setParentId] = useState<string>(initialParent);
+  const [childId, setChildId] = useState<string>(categoryId || "");
+  const children = categories.filter((c) => c.parentId === parentId);
 
   useEffect(() => {
     if (!state.ok) return;
@@ -120,6 +134,41 @@ export default function EditItemClient({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
+            <label className="block text-sm mb-1">Price</label>
+            <input type="number" name="price" min={0} step="0.01" defaultValue={price} className="w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Category</label>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                className="border rounded px-2 py-2"
+                value={parentId}
+                onChange={(e) => {
+                  setParentId(e.target.value);
+                  setChildId("");
+                }}
+              >
+                {parents.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+              <select
+                className="border rounded px-2 py-2"
+                value={childId}
+                onChange={(e) => setChildId(e.target.value)}
+              >
+                <option value="">(None)</option>
+                {children.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <input type="hidden" name="categoryId" value={childId || parentId || ""} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
             <label className="block text-sm mb-1">Location</label>
             <input name="location" defaultValue={item.location} className="w-full border rounded px-3 py-2" />
           </div>
@@ -133,6 +182,12 @@ export default function EditItemClient({
           <label className="block text-sm mb-1">Tags</label>
           <input name="tags" defaultValue={item.tags.join(", ")} className="w-full border rounded px-3 py-2" />
           <p className="text-xs text-gray-500 mt-1">cable, usb-c, black</p>
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">Options (JSON)</label>
+          <textarea name="options" defaultValue={optionsJson} className="w-full border rounded px-3 py-2 font-mono text-xs" rows={4} />
+          <p className="text-xs text-gray-500 mt-1">Define customizable options like color/size.</p>
         </div>
 
         {/* Existing media list with reorder and cover selector */}

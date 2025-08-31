@@ -1,6 +1,9 @@
 #!/usr/bin/env tsx
-import "dotenv/config";
-import { db } from "@stockholm/db";
+import path from "node:path";
+import { config as loadEnv } from "dotenv";
+// Prefer .env.local for local runs, then fallback to .env
+loadEnv({ path: path.join(process.cwd(), ".env.local"), override: true });
+loadEnv({ path: path.join(process.cwd(), ".env") });
 import { hash } from "bcryptjs";
 
 type Args = {
@@ -26,6 +29,7 @@ function parseArgs(): Args {
 }
 
 async function main() {
+  const { db } = await import("@stockholm/db");
   const { email, password, name, role } = parseArgs();
   console.log(`Seeding user: ${email} (${role})`);
   const existing = await db.user.findUnique({ where: { email } });

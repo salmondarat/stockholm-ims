@@ -19,6 +19,11 @@ const numberNonNegative = z.preprocess(
   z.coerce.number().int().min(0)
 );
 
+const numberMoney = z.preprocess(
+  (v) => (v === "" || v == null ? undefined : v),
+  z.coerce.number().min(0).optional()
+);
+
 const ItemSchema = z.object({
   name: z.string().min(1),
   sku: z.string().optional().nullable(),
@@ -27,6 +32,9 @@ const ItemSchema = z.object({
   condition: z.string().optional().nullable(),
   lowStockThreshold: numberNonNegative.default(0), // handles empty -> 0
   tags: z.string().optional().nullable(), // comma separated
+  price: numberMoney, // optional price
+  categoryId: z.string().uuid().optional().or(z.literal("")).optional(),
+  options: z.string().optional().nullable(), // JSON text
 });
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
@@ -172,6 +180,9 @@ export async function createItemAction(
       condition: form.get("condition"),
       lowStockThreshold: form.get("lowStockThreshold"),
       tags: form.get("tags"),
+      price: form.get("price"),
+      categoryId: form.get("categoryId"),
+      options: form.get("options"),
     });
 
     const tagsArray =
@@ -227,6 +238,16 @@ export async function createItemAction(
       mediaUrls.push(...urls);
     }
 
+    // Parse options JSON if provided
+    let optionsJson: unknown = undefined;
+    if (typeof parsed.options === "string" && parsed.options.trim()) {
+      try {
+        optionsJson = JSON.parse(parsed.options);
+      } catch {
+        // ignore invalid JSON
+      }
+    }
+
     const inserted = await db.item.create({
       data: {
         name: parsed.name,
@@ -236,6 +257,9 @@ export async function createItemAction(
         condition: parsed.condition ?? null,
         lowStockThreshold: parsed.lowStockThreshold,
         tags: tagsArray ?? undefined,
+        price: parsed.price ?? null,
+        categoryId: parsed.categoryId && parsed.categoryId.length ? parsed.categoryId : null,
+        options: optionsJson as any,
         // keep first media as legacy photoUrl for list view
         photoUrl: mediaUrls[0] ?? null,
       },
@@ -285,6 +309,9 @@ export async function updateItemAction(
       condition: form.get("condition"),
       lowStockThreshold: form.get("lowStockThreshold"),
       tags: form.get("tags"),
+      price: form.get("price"),
+      categoryId: form.get("categoryId"),
+      options: form.get("options"),
     });
 
     const tagsArray =
@@ -323,6 +350,20 @@ export async function updateItemAction(
 
     // Apply all media operations atomically
     await db.$transaction(async (tx) => {
+      // Parse options JSON if provided
+      let optionsJson: unknown = undefined;
+      if (typeof parsed.options === "string") {
+        const str = parsed.options.trim();
+        if (str) {
+          try {
+            optionsJson = JSON.parse(str);
+          } catch {
+            optionsJson = undefined; // ignore invalid
+          }
+        } else {
+          optionsJson = null; // empty clears
+        }
+      }
       const existing = await tx.item.findUnique({ where: { id }, select: { photoUrl: true } });
       // Update fields
       await tx.item.update({
@@ -335,6 +376,9 @@ export async function updateItemAction(
           condition: parsed.condition ?? null,
           lowStockThreshold: parsed.lowStockThreshold,
           tags: tagsArray ?? undefined,
+          price: parsed.price ?? null,
+          categoryId: parsed.categoryId && parsed.categoryId.length ? parsed.categoryId : null,
+          options: optionsJson as any,
         },
       });
 

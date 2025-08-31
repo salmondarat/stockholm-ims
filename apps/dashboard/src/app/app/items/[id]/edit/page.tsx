@@ -6,7 +6,7 @@ export const metadata = { title: "Edit Item — Stockholm IMS" };
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const item = await db.item.findUnique({ where: { id }, select: { id: true, name: true, sku: true, quantity: true, location: true, condition: true, lowStockThreshold: true, tags: true, photoUrl: true } });
+  const item = await db.item.findUnique({ where: { id }, select: { id: true, name: true, sku: true, quantity: true, location: true, condition: true, lowStockThreshold: true, tags: true, photoUrl: true, price: true, categoryId: true, options: true } });
   if (!item) {
     // minimal not-found
     return <div className="p-6">Item not found.</div>;
@@ -17,6 +17,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     orderBy: [{ position: "asc" }, { createdAt: "asc" }],
     select: { id: true, url: true },
   })) as { id: string; url: string }[];
+
+  const categories = await db.category.findMany({
+    select: { id: true, name: true, parentId: true },
+    orderBy: [{ parentId: "asc" }, { name: "asc" }],
+  });
 
   const s3Enabled = Boolean(
     process.env.S3_ENDPOINT &&
@@ -38,7 +43,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         tags: Array.isArray(item.tags) ? (item.tags as string[]) : [],
       }}
       media={media}
+      price={item.price ? Number(item.price) : 0}
+      categoryId={item.categoryId ?? ""}
+      optionsJson={item.options ? JSON.stringify(item.options) : ""}
       primaryPhotoUrl={item.photoUrl ?? null}
+      categories={categories}
       s3Enabled={s3Enabled}
     />
   );
