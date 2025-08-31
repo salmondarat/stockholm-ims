@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { db } from "@stockholm/db";
+import { auth } from "@/lib/auth";
 
 export const runtime = "nodejs"; // memastikan Buffer tersedia
 
 export async function GET() {
+  // Require authenticated session
+  const session = await auth();
+  if (!session?.user?.email) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
   // 1) Ambil data
   const data = await db.item.findMany({ orderBy: { name: "asc" } });
   const lowStock = data.filter(

@@ -11,5 +11,12 @@ export default async function Page({
   const params = await searchParams;
   const initialSku = typeof params?.sku === "string" ? params.sku : "";
 
-  return <NewItemClient initialSku={initialSku} />;
+  const s3Enabled = Boolean(
+    process.env.S3_ENDPOINT &&
+      process.env.S3_BUCKET &&
+      process.env.S3_ACCESS_KEY_ID &&
+      process.env.S3_SECRET_ACCESS_KEY
+  );
+
+  return <NewItemClient initialSku={initialSku} s3Enabled={s3Enabled} />;
 }

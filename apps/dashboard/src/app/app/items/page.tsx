@@ -13,6 +13,7 @@ export default async function ItemsPage({
   // 👇 MUST await before using properties
   const params = await searchParams;
   const filter = typeof params?.filter === "string" ? params.filter : undefined;
+  const skuQuery = typeof params?.sku === "string" ? params.sku : undefined;
 
   const list = await db.item.findMany({ orderBy: { createdAt: "asc" } });
 
@@ -21,7 +22,11 @@ export default async function ItemsPage({
     it.quantity <= (it.lowStockThreshold ?? 0);
 
   const lowCount = list.filter(isLow).length;
-  const data = filter === "low" ? list.filter(isLow) : list;
+  let data = filter === "low" ? list.filter(isLow) : list;
+  if (skuQuery) {
+    const q = skuQuery.toLowerCase();
+    data = data.filter((it) => (it.sku ?? "").toLowerCase().includes(q));
+  }
 
   return (
     <main className="p-6 space-y-4">
@@ -94,7 +99,9 @@ export default async function ItemsPage({
                       <span className="text-xs text-gray-400">—</span>
                     )}
                   </td>
-                  <td className="p-2">{it.name}</td>
+                  <td className="p-2">
+                    <Link href={`/app/items/${it.id}`}>{it.name}</Link>
+                  </td>
                   <td className="p-2">{it.sku ?? "-"}</td>
                   <td className="p-2 text-right">
                     <form
@@ -109,6 +116,7 @@ export default async function ItemsPage({
                         type="number"
                         name="q"
                         defaultValue={it.quantity}
+                        min={0}
                         className="w-20 border rounded px-2 py-1"
                       />
                       <button className="text-xs px-2 py-1 border rounded">
@@ -139,9 +147,17 @@ export default async function ItemsPage({
                         await deleteItem(it.id);
                       }}
                     >
-                      <button className="text-xs px-2 py-1 border rounded">
-                        Delete
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/app/items/${it.id}/edit`}
+                          className="text-xs px-2 py-1 border rounded"
+                        >
+                          Edit
+                        </Link>
+                        <button className="text-xs px-2 py-1 border rounded">
+                          Delete
+                        </button>
+                      </div>
                     </form>
                   </td>
                 </tr>

@@ -16,6 +16,12 @@
       "@stockholm/db": [
         "../../packages/db/src"
       ],
+      "@stockholm/config": [
+        "../../packages/config/src"
+      ],
+      "@stockholm/config/*": [
+        "../../packages/config/src/*"
+      ],
       "@stockholm/utils": [
         "../../packages/utils/src"
       ]

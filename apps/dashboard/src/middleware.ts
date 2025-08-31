@@ -20,4 +20,12 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/app/:path*"] };
+export const config = {
+  matcher: [
+    "/app/:path*",
+    // Protect selected APIs as a second layer
+    "/api/exports/:path*",
+    "/api/uploads/:path*",
+    "/api/low-stock/count",
+  ],
+};

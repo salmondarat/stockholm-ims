@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useFormStatus } from "react-dom"; // keep this
 import { useActionState, useEffect, useRef, useState } from "react"; // <-- useActionState here
-import UploadPhoto from "@/components/UploadPhoto";
+import UploadMedia from "@/components/UploadMedia";
 import SuccessDialog from "@/components/SuccessDialog";
 import { createItemAction, type CreateItemState } from "../actions";
 
@@ -24,8 +24,10 @@ function SubmitButton() {
 
 export default function NewItemClient({
   initialSku = "",
+  s3Enabled = false,
 }: {
   initialSku?: string;
+  s3Enabled?: boolean;
 }) {
   const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -33,6 +35,9 @@ export default function NewItemClient({
   const [state, formAction] = useActionState(createItemAction, initialState);
 
   const [showDialog, setShowDialog] = useState(false);
+  const [storage, setStorage] = useState<"local" | "s3">(
+    s3Enabled ? "s3" : "local"
+  );
 
   useEffect(() => {
     if (state.ok) setShowDialog(true);
@@ -132,8 +137,41 @@ export default function NewItemClient({
           </p>
         </div>
 
-        {/* Upload photo dengan tombol cantik + preview + kamera */}
-        <UploadPhoto name="image" label="Photo" accept="image/*" />
+        {/* Upload multiple media (images) */}
+        <UploadMedia name="images" label="Media (images)" accept="image/*" mode={storage} />
+
+        {/* Storage target selection: Local vs MinIO (S3) */}
+        <div className="space-y-2">
+          <label className="block text-sm mb-1">Upload Storage</label>
+          <div className="flex items-center gap-4 text-sm">
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="radio"
+                name="photoStorage"
+                value="local"
+                checked={storage === "local"}
+                onChange={() => setStorage("local")}
+              />
+              <span>Local</span>
+            </label>
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="radio"
+                name="photoStorage"
+                value="s3"
+                checked={storage === "s3"}
+                disabled={!s3Enabled}
+                onChange={() => setStorage("s3")}
+              />
+              <span>MinIO (S3)</span>
+            </label>
+          </div>
+          {!s3Enabled && (
+            <p className="text-xs text-gray-500">
+              MinIO not configured; using local uploads.
+            </p>
+          )}
+        </div>
 
         {state.error && (
           <p className="text-sm text-red-600">Error: {state.error}</p>

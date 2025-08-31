@@ -21,3 +21,6 @@ if (process.env.NODE_ENV === "development") {
 
 // Re-export types kalau perlu
 export * from "@prisma/client";
+
+// Alias yang digunakan di apps (import { db } from "@stockholm/db")
+export const db = prisma;

@@ -3,7 +3,9 @@
     "baseUrl": ".",
     "paths": {
       "@stockholm/db": ["packages/db/src/index.ts"],
-      "@stockholm/db/*": ["packages/db/src/*"]
+      "@stockholm/db/*": ["packages/db/src/*"],
+      "@stockholm/config": ["packages/config/src"],
+      "@stockholm/config/*": ["packages/config/src/*"]
     }
   }
 }
