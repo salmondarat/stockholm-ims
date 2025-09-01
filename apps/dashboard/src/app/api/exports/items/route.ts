@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { db } from "@stockholm/db";
 import { auth } from "@/lib/auth";
+import { summarizeOptions, getVariantQuantitySum } from "@/lib/options";
 
 export const runtime = "nodejs"; // memastikan Buffer tersedia
 
@@ -12,7 +13,7 @@ export async function GET() {
     return new NextResponse("Unauthorized", { status: 401 });
   }
   // 1) Ambil data
-  const data = await db.item.findMany({ orderBy: { name: "asc" } });
+  const data = await db.item.findMany({ orderBy: { name: "asc" }, include: { category: { select: { name: true } } } });
   const lowStock = data.filter(
     (x) =>
       (x.lowStockThreshold ?? 0) > 0 && x.quantity <= (x.lowStockThreshold ?? 0)
@@ -41,12 +42,14 @@ export async function GET() {
       const headers = [
         "Name",
         "SKU",
+        "Category",
         "Qty",
-        "Threshold",
+        "Price",
+        "Options",
         "Location",
         "Condition",
       ];
-      const colX = [margin, 220, 360, 410, 460, 520] as const;
+      const colX = [margin, 150, 230, 300, 340, 390, 470, 520] as const;
 
       page.drawText(headers[0], { x: colX[0], y, size: 11, font: fontBold });
       page.drawText(headers[1], { x: colX[1], y, size: 11, font: fontBold });
@@ -106,25 +109,28 @@ export async function GET() {
   type ItemRow = {
     name: string;
     sku: string | null;
+    category?: { name: string } | null;
     quantity: number;
     lowStockThreshold?: number | null;
     location?: string | null;
     condition?: string | null;
+    price?: any;
+    options?: any;
   };
 
   const drawRow = (row: ItemRow) => {
     const text = (v: unknown) => (v == null ? "" : String(v));
     page.drawText(text(row.name), { x: colX[0], y, size: 10, font });
     page.drawText(text(row.sku), { x: colX[1], y, size: 10, font });
-    page.drawText(String(row.quantity), { x: colX[2], y, size: 10, font });
-    page.drawText(String(row.lowStockThreshold ?? "-"), {
-      x: colX[3],
-      y,
-      size: 10,
-      font,
-    });
-    page.drawText(text(row.location), { x: colX[4], y, size: 10, font });
-    page.drawText(text(row.condition), { x: colX[5], y, size: 10, font });
+    page.drawText(text(row.category?.name), { x: colX[2], y, size: 10, font });
+    const qty = getVariantQuantitySum((row as any).options) || row.quantity || 0;
+    page.drawText(String(qty), { x: colX[3], y, size: 10, font });
+    page.drawText(`$${Number(row.price ?? 0).toFixed(2)}`, { x: colX[4], y, size: 10, font });
+    page.drawText(summarizeOptions(row.options, 40), { x: colX[5], y, size: 9, font });
+    page.drawText(text(row.location), { x: colX[6], y, size: 10, font });
+    page.drawText(text(row.condition), { x: colX[7], y, size: 10, font });
+
+    // summarizer imported from util
   };
 
   // 3) Loop data + pagination

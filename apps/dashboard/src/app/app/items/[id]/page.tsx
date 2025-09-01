@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { db } from "@stockholm/db";
+import CodesActions from "./CodesActions";
+import { getVariantQuantitySum, listVariantQuantities } from "@/lib/options";
 
 export default async function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,12 +28,46 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         </div>
       </div>
 
+      <div className="border rounded-lg p-4">
+        <div className="text-sm font-medium mb-2">Codes & Label</div>
+        <CodesActions id={id} />
+      </div>
+
+      <div className="border rounded-lg p-4">
+        <div className="text-sm font-medium mb-2">Variants</div>
+        {renderOptions((item as any).options)}
+        {(() => {
+          const variants = listVariantQuantities((item as any).options);
+          if (!variants.length) return null;
+          return (
+            <div className="mt-3 space-y-1">
+              <div className="text-xs text-gray-500">Quantities by variant</div>
+              <div className="space-y-1">
+                {variants.map((v, i) => (
+                  <div key={i} className="text-sm flex items-center justify-between">
+                    <div className="flex flex-wrap gap-1">
+                      {Object.entries(v.attrs).map(([k, val]) => (
+                        <span key={k + val} className="px-2 py-0.5 rounded-full border text-xs">{k}: {val}</span>
+                      ))}
+                    </div>
+                    <div className="text-xs text-gray-600 flex items-center gap-3">
+                      <span>sku: {v.sku ?? '-'}</span>
+                      <span>qty: {v.qty}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
           <div className="text-sm text-gray-500">SKU</div>
           <div className="text-base">{item.sku ?? "-"}</div>
           <div className="text-sm text-gray-500 mt-4">Quantity</div>
-          <div className="text-base">{item.quantity}</div>
+          <div className="text-base">{(() => { const raw=(item as any).options; const hasVariants = raw && typeof raw==='object' && Array.isArray(raw._variants); const sum=getVariantQuantitySum(raw); return hasVariants ? sum : item.quantity; })()}</div>
           <div className="text-sm text-gray-500 mt-4">Low-stock threshold</div>
           <div className="text-base">{item.lowStockThreshold ?? 0}</div>
           <div className="text-sm text-gray-500 mt-4">Location</div>
@@ -59,3 +95,31 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
   );
 }
 
+function renderOptions(options: any) {
+  try {
+    const obj = options && typeof options === "object" ? options : null;
+    if (!obj) return <div className="text-sm text-gray-500">-</div>;
+    const entries = Object.entries(obj).filter(
+      ([k, v]) => k && Array.isArray(v) && (v as unknown[]).length
+    ) as Array<[string, string[]]>;
+    if (!entries.length) return <div className="text-sm text-gray-500">-</div>;
+    return (
+      <div className="space-y-2">
+        {entries.map(([k, vals]) => (
+          <div key={k} className="text-sm">
+            <span className="font-medium">{k}:</span>
+            <span className="ml-2 inline-flex flex-wrap gap-1 align-middle">
+              {vals.map((v) => (
+                <span key={k + v} className="px-2 py-0.5 rounded-full border text-xs">
+                  {v}
+                </span>
+              ))}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  } catch {
+    return <div className="text-sm text-gray-500">-</div>;
+  }
+}

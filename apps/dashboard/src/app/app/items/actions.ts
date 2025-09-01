@@ -26,14 +26,29 @@ const numberMoney = z.preprocess(
 
 const ItemSchema = z.object({
   name: z.string().min(1),
-  sku: z.string().optional().nullable(),
+  sku: z.preprocess(
+    (v) => (typeof v === "string" ? v.trim() : v),
+    z.string().min(1, { message: "SKU is required" })
+  ),
   quantity: numberNonNegative, // handles empty -> 0
   location: z.string().optional().nullable(),
   condition: z.string().optional().nullable(),
   lowStockThreshold: numberNonNegative.default(0), // handles empty -> 0
   tags: z.string().optional().nullable(), // comma separated
   price: numberMoney, // optional price
-  categoryId: z.string().uuid().optional().or(z.literal("")).optional(),
+  categoryId: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.string().uuid().optional()
+  ),
+  category: z.preprocess(
+    (v) =>
+      v == null
+        ? undefined
+        : typeof v === "string" && v.trim() === ""
+          ? undefined
+          : v,
+    z.string().min(1).optional()
+  ),
   options: z.string().optional().nullable(), // JSON text
 });
 
@@ -100,6 +115,33 @@ function publicS3UrlForKey(key: string) {
 }
 
 type StorageTarget = "local" | "s3" | undefined;
+
+function slugify(input: string) {
+  return input
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function ensureCategoryByName(name: string): Promise<string> {
+  const slug = slugify(name);
+  const found = await db.category.findFirst({ where: { slug } });
+  if (found) return found.id;
+  try {
+    const created = await db.category.create({ data: { name: name.trim(), slug, parentId: null } });
+    return created.id;
+  } catch {
+    // Unique slug might already exist (race). Fetch again.
+    const again = await db.category.findFirst({ where: { slug } });
+    if (again) return again.id;
+    // Fallback: create with slightly modified slug
+    const alt = await db.category.create({ data: { name: name.trim(), slug: `${slug}-${Date.now()}` } as any });
+    return alt.id;
+  }
+}
 
 async function savePhoto(
   file: File | null,
@@ -172,6 +214,7 @@ export async function createItemAction(
   form: FormData
 ): Promise<CreateItemState> {
   try {
+    const optionsEnabled = String(form.get("optionsEnabled") || "1") === "1";
     const parsed = ItemSchema.parse({
       name: form.get("name"),
       sku: form.get("sku"),
@@ -182,6 +225,7 @@ export async function createItemAction(
       tags: form.get("tags"),
       price: form.get("price"),
       categoryId: form.get("categoryId"),
+      category: form.get("category"),
       options: form.get("options"),
     });
 
@@ -239,27 +283,67 @@ export async function createItemAction(
     }
 
     // Parse options JSON if provided
-    let optionsJson: unknown = undefined;
-    if (typeof parsed.options === "string" && parsed.options.trim()) {
+    let optionsObj: Record<string, unknown> | null = null;
+    if (optionsEnabled && typeof parsed.options === "string" && parsed.options.trim()) {
       try {
-        optionsJson = JSON.parse(parsed.options);
+        const o = JSON.parse(parsed.options);
+        if (o && typeof o === "object") optionsObj = o as Record<string, unknown>;
       } catch {
-        // ignore invalid JSON
+        /* ignore */
       }
     }
 
+    // Optional variants JSON: [{ attrs: { Size: "M", Color: "Red" }, qty: 10 }, ...]
+    let variantsArr: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
+    const variantsRaw = form.get("variants");
+    if (typeof variantsRaw === "string" && variantsRaw.trim()) {
+      try {
+        const arr = JSON.parse(variantsRaw);
+        if (Array.isArray(arr)) {
+          variantsArr = arr
+            .map((x, i) => ({
+              attrs: x && typeof x === "object" && typeof x.attrs === "object" ? (x.attrs as Record<string, string>) : {},
+              qty: Number.isFinite(x?.qty) ? Number(x.qty) : 0,
+              sku: typeof x?.sku === "string" && x.sku ? x.sku : `${parsed.sku}-${i + 1}`,
+            }))
+            .filter((x) => x.qty > 0 || (typeof x.sku === "string" && x.sku.length > 0));
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    // Resolve category by name if provided, else use categoryId
+    const categoryId: string | null = await (async () => {
+      const name = (parsed.category ?? "").trim();
+      if (name) {
+        const id = await ensureCategoryByName(name);
+        return id;
+      }
+      const rawId = parsed.categoryId;
+      if (typeof rawId === "string" && rawId) return rawId;
+      return null;
+    })();
+
+    const variantsProvided = optionsEnabled && typeof variantsRaw === "string" && variantsRaw.trim().length > 0;
+    const quantityFromVariants = variantsArr.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0);
     const inserted = await db.item.create({
       data: {
         name: parsed.name,
         sku: parsed.sku ?? null,
-        quantity: parsed.quantity,
+        quantity: variantsProvided ? quantityFromVariants : parsed.quantity,
         location: parsed.location ?? null,
         condition: parsed.condition ?? null,
         lowStockThreshold: parsed.lowStockThreshold,
         tags: tagsArray ?? undefined,
         price: parsed.price ?? null,
-        categoryId: parsed.categoryId && parsed.categoryId.length ? parsed.categoryId : null,
-        options: optionsJson as any,
+        categoryId,
+        options: optionsEnabled
+          ? ({
+              ...(optionsObj || {}),
+              ...(variantsProvided ? { _variants: variantsArr } : {}),
+            } as any)
+          : ({} as any),
         // keep first media as legacy photoUrl for list view
         photoUrl: mediaUrls[0] ?? null,
       },
@@ -298,6 +382,7 @@ export async function updateItemAction(
   form: FormData
 ): Promise<UpdateItemState> {
   try {
+    const optionsEnabled = String(form.get("optionsEnabled") || "1") === "1";
     const id = String(form.get("id") || "");
     if (!id) return { ok: false, error: "Missing item id" };
 
@@ -311,6 +396,7 @@ export async function updateItemAction(
       tags: form.get("tags"),
       price: form.get("price"),
       categoryId: form.get("categoryId"),
+      category: form.get("category"),
       options: form.get("options"),
     });
 
@@ -351,34 +437,87 @@ export async function updateItemAction(
     // Apply all media operations atomically
     await db.$transaction(async (tx) => {
       // Parse options JSON if provided
-      let optionsJson: unknown = undefined;
+      let optionsObj: Record<string, unknown> | null = null;
       if (typeof parsed.options === "string") {
         const str = parsed.options.trim();
-        if (str) {
+        if (optionsEnabled && str) {
           try {
-            optionsJson = JSON.parse(str);
+            const o = JSON.parse(str);
+            if (o && typeof o === "object") optionsObj = o as Record<string, unknown>;
           } catch {
-            optionsJson = undefined; // ignore invalid
+            optionsObj = undefined as any; // leave unchanged when invalid
           }
+        } else if (!optionsEnabled) {
+          optionsObj = null; // explicit clear when disabled
         } else {
-          optionsJson = null; // empty clears
+          optionsObj = undefined as any; // keep existing when enabled but empty
         }
       }
-      const existing = await tx.item.findUnique({ where: { id }, select: { photoUrl: true } });
+
+      // Optional variants JSON
+    let variantsArr: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
+      const variantsRaw = form.get("variants");
+      if (optionsEnabled && typeof variantsRaw === "string" && variantsRaw.trim()) {
+        try {
+          const arr = JSON.parse(variantsRaw);
+          if (Array.isArray(arr)) {
+            variantsArr = arr
+              .map((x, i) => ({
+                attrs: x && typeof x === "object" && typeof x.attrs === "object" ? (x.attrs as Record<string, string>) : {},
+                qty: Number.isFinite(x?.qty) ? Number(x.qty) : 0,
+                sku: typeof x?.sku === "string" && x.sku ? x.sku : `${parsed.sku}-${i + 1}`,
+              }))
+              .filter((x) => x.qty > 0 || (typeof x.sku === "string" && x.sku.length > 0));
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+      const existing = await tx.item.findUnique({ where: { id }, select: { photoUrl: true, options: true } });
       // Update fields
+      // Resolve category
+      const resolvedCategoryId: string | null = await (async () => {
+        const name = (parsed.category ?? "").trim();
+        if (name) {
+          const id = await ensureCategoryByName(name);
+          return id;
+        }
+        const rawId = parsed.categoryId;
+        if (typeof rawId === "string" && rawId) return rawId;
+        return null;
+      })();
+
+      const variantsProvided = optionsEnabled && typeof variantsRaw === "string" && variantsRaw.trim().length > 0;
+      const quantityFromVariants = variantsArr.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0);
+      // Build final options merging existing when needed
+      const baseOptions: Record<string, unknown> = (() => {
+        if (typeof optionsObj === "undefined") {
+          const ex = existing?.options;
+          return ex && typeof ex === "object" ? ({ ...(ex as any) } as Record<string, unknown>) : {};
+        }
+        if (optionsObj === null) return {};
+        return { ...(optionsObj || {}) };
+      })();
+
+      if (variantsProvided) {
+        (baseOptions as any)._variants = variantsArr;
+      } else if (typeof optionsObj !== "undefined") {
+        delete (baseOptions as any)._variants;
+      }
+
       await tx.item.update({
         where: { id },
         data: {
           name: parsed.name,
           sku: parsed.sku ?? null,
-          quantity: parsed.quantity,
+          quantity: variantsProvided ? quantityFromVariants : parsed.quantity,
           location: parsed.location ?? null,
           condition: parsed.condition ?? null,
           lowStockThreshold: parsed.lowStockThreshold,
           tags: tagsArray ?? undefined,
           price: parsed.price ?? null,
-          categoryId: parsed.categoryId && parsed.categoryId.length ? parsed.categoryId : null,
-          options: optionsJson as any,
+          categoryId: resolvedCategoryId,
+          options: baseOptions as any,
         },
       });
 

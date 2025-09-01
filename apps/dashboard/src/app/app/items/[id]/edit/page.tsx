@@ -22,6 +22,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     select: { id: true, name: true, parentId: true },
     orderBy: [{ parentId: "asc" }, { name: "asc" }],
   });
+  const currentCategoryName = categories.find((c) => c.id === (item.categoryId ?? ""))?.name || "";
 
   const s3Enabled = Boolean(
     process.env.S3_ENDPOINT &&
@@ -45,6 +46,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       media={media}
       price={item.price ? Number(item.price) : 0}
       categoryId={item.categoryId ?? ""}
+      categoryName={currentCategoryName}
       optionsJson={item.options ? JSON.stringify(item.options) : ""}
       primaryPhotoUrl={item.photoUrl ?? null}
       categories={categories}

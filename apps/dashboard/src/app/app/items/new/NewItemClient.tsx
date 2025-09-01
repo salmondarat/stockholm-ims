@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useFormStatus } from "react-dom"; // keep this
 import { useActionState, useEffect, useRef, useState } from "react"; // <-- useActionState here
 import UploadMedia from "@/components/UploadMedia";
+import CategoryCombobox from "@/components/CategoryCombobox";
 import SuccessDialog from "@/components/SuccessDialog";
 import { createItemAction, type CreateItemState } from "../actions";
+import OptionsBuilder from "@/components/OptionsBuilder";
 
 const initialState: CreateItemState = { ok: false };
 
@@ -40,10 +42,9 @@ export default function NewItemClient({
   const [storage, setStorage] = useState<"local" | "s3">(
     s3Enabled ? "s3" : "local"
   );
-  const parents = categories.filter((c) => !c.parentId);
-  const [parentId, setParentId] = useState<string>(parents[0]?.id ?? "");
-  const [childId, setChildId] = useState<string>("");
-  const children = categories.filter((c) => c.parentId === parentId);
+  const [category, setCategory] = useState<string>("");
+  const [sku, setSku] = useState<string>(initialSku);
+  const [variantInfo, setVariantInfo] = useState<{ hasVariants: boolean; sumQty: number }>({ hasVariants: false, sumQty: 0 });
 
   useEffect(() => {
     if (state.ok) setShowDialog(true);
@@ -75,10 +76,12 @@ export default function NewItemClient({
         </div>
 
         <div>
-          <label className="block text-sm mb-1">SKU</label>
+          <label className="block text-sm mb-1">SKU *</label>
           <input
             name="sku"
-            defaultValue={initialSku}
+            required
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
             className="w-full border rounded px-3 py-2"
             placeholder="E.g. ABC-123"
           />
@@ -98,8 +101,12 @@ export default function NewItemClient({
               defaultValue={0}
               min={0}
               required
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-2 disabled:bg-gray-50"
+              readOnly={variantInfo.hasVariants}
             />
+            {variantInfo.hasVariants && (
+              <p className="text-xs text-gray-500 mt-1">Derived from variants: {variantInfo.sumQty}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm mb-1">Low-stock Threshold</label>
@@ -125,38 +132,13 @@ export default function NewItemClient({
               placeholder="e.g. 199.99"
             />
           </div>
-          <div>
-            <label className="block text-sm mb-1">Category</label>
-            <div className="grid grid-cols-2 gap-2">
-              <select
-                className="border rounded px-2 py-2"
-                value={parentId}
-                onChange={(e) => {
-                  setParentId(e.target.value);
-                  setChildId("");
-                }}
-              >
-                {parents.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="border rounded px-2 py-2"
-                value={childId}
-                onChange={(e) => setChildId(e.target.value)}
-              >
-                <option value="">(None)</option>
-                {children.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <input type="hidden" name="categoryId" value={childId || parentId || ""} />
-          </div>
+          <CategoryCombobox
+            categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+            value={category}
+            onChange={setCategory}
+            name="category"
+            label="Category"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -189,16 +171,7 @@ export default function NewItemClient({
           </p>
         </div>
 
-        <div>
-          <label className="block text-sm mb-1">Options (JSON)</label>
-          <textarea
-            name="options"
-            className="w-full border rounded px-3 py-2 font-mono text-xs"
-            rows={4}
-            placeholder='e.g. {"color":["Black","White"],"size":["S","M","L"]}'
-          />
-          <p className="text-xs text-gray-500 mt-1">Define customizable options like color/size.</p>
-        </div>
+        <OptionsBuilder baseSku={sku} onSummaryChange={setVariantInfo} />
 
         {/* Upload multiple media (images) */}
         <UploadMedia name="images" label="Media (images)" accept="image/*" mode={storage} />

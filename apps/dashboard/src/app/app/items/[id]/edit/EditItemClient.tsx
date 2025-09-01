@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import UploadMedia from "@/components/UploadMedia";
+import CategoryCombobox from "@/components/CategoryCombobox";
+import OptionsBuilder from "@/components/OptionsBuilder";
 import { updateItemAction, type UpdateItemState } from "../../actions";
 
 function SubmitButton() {
@@ -25,6 +27,7 @@ export default function EditItemClient({
   primaryPhotoUrl = null,
   price = 0,
   categoryId = "",
+  categoryName = "",
   optionsJson = "",
   categories = [],
   s3Enabled = false,
@@ -43,6 +46,7 @@ export default function EditItemClient({
   primaryPhotoUrl?: string | null;
   price?: number;
   categoryId?: string;
+  categoryName?: string;
   optionsJson?: string;
   categories?: Array<{ id: string; name: string; parentId: string | null }>;
   s3Enabled?: boolean;
@@ -57,11 +61,9 @@ export default function EditItemClient({
   );
   const [showSaved, setShowSaved] = useState(false);
 
-  const parents = categories.filter((c) => !c.parentId);
-  const initialParent = categories.find((c) => c.id === (categoryId || ""))?.parentId || parents[0]?.id || "";
-  const [parentId, setParentId] = useState<string>(initialParent);
-  const [childId, setChildId] = useState<string>(categoryId || "");
-  const children = categories.filter((c) => c.parentId === parentId);
+  const [category, setCategory] = useState<string>(categoryName || "");
+  const [sku, setSku] = useState<string>(item.sku || "");
+  const [variantInfo, setVariantInfo] = useState<{ hasVariants: boolean; sumQty: number }>({ hasVariants: false, sumQty: 0 });
 
   useEffect(() => {
     if (!state.ok) return;
@@ -117,14 +119,17 @@ export default function EditItemClient({
         </div>
 
         <div>
-          <label className="block text-sm mb-1">SKU</label>
-          <input name="sku" defaultValue={item.sku} className="w-full border rounded px-3 py-2" />
+          <label className="block text-sm mb-1">SKU *</label>
+          <input name="sku" required value={sku} onChange={(e) => setSku(e.target.value)} className="w-full border rounded px-3 py-2" />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm mb-1">Quantity *</label>
-            <input type="number" name="quantity" min={0} defaultValue={item.quantity} required className="w-full border rounded px-3 py-2" />
+            <input type="number" name="quantity" min={0} defaultValue={item.quantity} required className="w-full border rounded px-3 py-2 disabled:bg-gray-50" readOnly={variantInfo.hasVariants} />
+            {variantInfo.hasVariants && (
+              <p className="text-xs text-gray-500 mt-1">Derived from variants: {variantInfo.sumQty}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm mb-1">Low-stock Threshold</label>
@@ -137,34 +142,13 @@ export default function EditItemClient({
             <label className="block text-sm mb-1">Price</label>
             <input type="number" name="price" min={0} step="0.01" defaultValue={price} className="w-full border rounded px-3 py-2" />
           </div>
-          <div>
-            <label className="block text-sm mb-1">Category</label>
-            <div className="grid grid-cols-2 gap-2">
-              <select
-                className="border rounded px-2 py-2"
-                value={parentId}
-                onChange={(e) => {
-                  setParentId(e.target.value);
-                  setChildId("");
-                }}
-              >
-                {parents.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-              <select
-                className="border rounded px-2 py-2"
-                value={childId}
-                onChange={(e) => setChildId(e.target.value)}
-              >
-                <option value="">(None)</option>
-                {children.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <input type="hidden" name="categoryId" value={childId || parentId || ""} />
-          </div>
+          <CategoryCombobox
+            categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+            value={category}
+            onChange={setCategory}
+            name="category"
+            label="Category"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -184,11 +168,7 @@ export default function EditItemClient({
           <p className="text-xs text-gray-500 mt-1">cable, usb-c, black</p>
         </div>
 
-        <div>
-          <label className="block text-sm mb-1">Options (JSON)</label>
-          <textarea name="options" defaultValue={optionsJson} className="w-full border rounded px-3 py-2 font-mono text-xs" rows={4} />
-          <p className="text-xs text-gray-500 mt-1">Define customizable options like color/size.</p>
-        </div>
+        <OptionsBuilder defaultValue={optionsJson} baseSku={sku} onSummaryChange={setVariantInfo} />
 
         {/* Existing media list with reorder and cover selector */}
         <div className="space-y-2">
