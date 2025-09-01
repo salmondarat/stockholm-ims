@@ -57,6 +57,11 @@ pnpm install
 
 ```bash
 docker compose -f infra/docker-compose.dev.yml up -d
+# or use the helper
+bash infra/dev-containers.sh
+# or enable `docker up` (Docker CLI plugin)
+bash infra/install-docker-up.sh   # install once
+docker up -d                      # uses infra/docker-compose.dev.yml
 ```
 
 3) Configure environment

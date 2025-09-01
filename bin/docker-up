@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Docker CLI plugin: enables `docker up [args...]`
+# Delegates to: docker compose -f <repo>/infra/docker-compose.dev.yml up [args]
+
+# Metadata handshake for Docker CLI plugin system
+if [[ "${1:-}" == "docker-cli-plugin-metadata" ]]; then
+  cat <<'JSON'
+{"SchemaVersion":"0.1.0","Vendor":"Stockholm IMS","Version":"0.1.0","ShortDescription":"Run dev Docker Compose stack"}
+JSON
+  exit 0
+fi
+
+usage() {
+  cat <<'EOF'
+Usage: docker up [compose up args]
+
+Runs `docker compose -f infra/docker-compose.dev.yml up [args]` for the nearest repo.
+
+Examples:
+  docker up -d
+  docker up --build
+  docker up --remove-orphans
+EOF
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+# Resolve this script's real directory (follow symlinks)
+SOURCE="${BASH_SOURCE[0]}"
+while [[ -h "$SOURCE" ]]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+
+find_compose_file() {
+  local dir="$PWD"
+  while :; do
+    if [[ -f "$dir/infra/docker-compose.dev.yml" ]]; then
+      echo "$dir/infra/docker-compose.dev.yml"
+      return 0
+    fi
+    if [[ "$dir" == "/" ]]; then
+      break
+    fi
+    dir="$(dirname "$dir")"
+  done
+  # Fallback to repo where this plugin resides (in case of symlink install)
+  if [[ -f "$SCRIPT_DIR/../infra/docker-compose.dev.yml" ]]; then
+    echo "$(cd "$SCRIPT_DIR/.." && pwd)/infra/docker-compose.dev.yml"
+    return 0
+  fi
+  return 1
+}
+
+COMPOSE_FILE="$(find_compose_file || true)"
+if [[ -z "${COMPOSE_FILE:-}" ]]; then
+  echo "Could not locate infra/docker-compose.dev.yml starting from $PWD" >&2
+  exit 1
+fi
+
+# Some Docker CLI versions pass the subcommand name as argv[1].
+# If we see a leading 'up', drop it to avoid 'up up'.
+if [[ "${1:-}" == "up" ]]; then
+  shift
+fi
+
+exec docker compose -f "$COMPOSE_FILE" up "$@"
