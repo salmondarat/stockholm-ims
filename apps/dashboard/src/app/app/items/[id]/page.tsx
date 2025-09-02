@@ -5,34 +5,28 @@ import { listVariantQuantities } from "@/lib/options";
 
 export default async function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let item = await db.item.findUnique({
-    where: { id },
-    include: { variants: { select: { attrs: true, qty: true, sku: true } } },
-  }).catch(() => null);
-  if (!item) {
-    // Fallback without variants relation
-    const base = await db.item.findUnique({ where: { id } });
-    if (!base) return <div className="p-6">Item not found.</div>;
-    const legacyVariants = listVariantQuantities(base.options);
-    const merged = {
-      id: base.id,
-      name: base.name,
-      sku: base.sku,
-      quantity: base.quantity,
-      location: base.location,
-      condition: base.condition,
-      photoUrl: base.photoUrl,
-      tags: base.tags,
-      price: base.price,
-      lowStockThreshold: base.lowStockThreshold,
-      options: base.options,
-      createdAt: base.createdAt,
-      updatedAt: base.updatedAt,
-      variants: legacyVariants,
+  const base = await db.item.findUnique({ where: { id } });
+  if (!base) return <div className="p-6">Item not found.</div>;
+  const dbAny = db as unknown as {
+    itemVariant?: {
+      findMany: (args: unknown) => Promise<Array<{ itemId: string; attrs: Record<string, string>; qty: number; sku: string | null }>>;
     };
-    item = merged as unknown as typeof item;
+  };
+  let variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
+  if (dbAny.itemVariant && typeof dbAny.itemVariant.findMany === "function") {
+    try {
+      const vrows = await dbAny.itemVariant.findMany({
+        where: { itemId: id },
+        select: { itemId: true, attrs: true, qty: true, sku: true },
+      } as unknown);
+      variants = vrows.map((v) => ({ attrs: v.attrs, qty: v.qty, sku: v.sku ?? undefined }));
+    } catch {
+      variants = listVariantQuantities(base.options);
+    }
+  } else {
+    variants = listVariantQuantities(base.options);
   }
-  if (!item) return <div className="p-6">Item not found.</div>;
+  const item = { ...base, variants } as typeof base & { variants: typeof variants };
 
   const media = (await db.itemMedia.findMany({
     where: { itemId: id },

@@ -18,7 +18,7 @@ export default async function ItemsPage({
   const filter = typeof params?.filter === "string" ? params.filter : undefined;
   const skuQuery = typeof params?.sku === "string" ? params.sku : undefined;
 
-  // Try to load normalized variants; fallback to legacy options._variants when the relation is not available
+  // Load items; if ItemVariant model exists, load variants via separate query; otherwise derive from legacy options
   let list: Array<{
     id: string;
     name: string;
@@ -34,50 +34,51 @@ export default async function ItemsPage({
     options: unknown;
     variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
   }> = [];
-  try {
-    const rows = await db.item.findMany({
-      orderBy: { createdAt: "asc" },
-      include: {
-        category: { select: { name: true } },
-        variants: { select: { attrs: true, qty: true, sku: true } },
-      },
-    });
-    list = rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      sku: r.sku,
-      quantity: r.quantity,
-      location: r.location,
-      condition: r.condition,
-      photoUrl: r.photoUrl,
-      tags: r.tags,
-      price: r.price,
-      lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
-      category: r.category as { name: string } | null,
-      options: (r as unknown as { options: unknown }).options,
-      variants: (r as unknown as { variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> }).variants,
-    }));
-  } catch {
-    const rows = await db.item.findMany({
-      orderBy: { createdAt: "asc" },
-      include: { category: { select: { name: true } } },
-    });
-    list = rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      sku: r.sku,
-      quantity: r.quantity,
-      location: r.location,
-      condition: r.condition,
-      photoUrl: r.photoUrl,
-      tags: r.tags,
-      price: r.price,
-      lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
-      category: r.category as { name: string } | null,
-      options: (r as unknown as { options: unknown }).options,
-      variants: listVariantQuantities(r.options),
-    }));
+  const rows = await db.item.findMany({
+    orderBy: { createdAt: "asc" },
+    include: { category: { select: { name: true } } },
+  });
+  const ids = rows.map((r) => r.id);
+  const dbAny = db as unknown as {
+    itemVariant?: {
+      findMany: (args: unknown) => Promise<Array<{ itemId: string; attrs: Record<string, string>; qty: number; sku: string | null }>>;
+    };
+  };
+  const variantsMap = new Map<string, Array<{ attrs: Record<string, string>; qty: number; sku?: string }>>();
+  if (dbAny.itemVariant && typeof dbAny.itemVariant.findMany === "function" && ids.length) {
+    try {
+      const vrows = await dbAny.itemVariant.findMany({
+        where: { itemId: { in: ids } },
+        select: { itemId: true, attrs: true, qty: true, sku: true },
+      } as unknown);
+      for (const v of vrows) {
+        const arr = variantsMap.get(v.itemId) ?? [];
+        arr.push({ attrs: v.attrs, qty: v.qty, sku: v.sku ?? undefined });
+        variantsMap.set(v.itemId, arr);
+      }
+    } catch {
+      // ignore; will fallback to legacy
+    }
   }
+  list = rows.map((r) => {
+    const legacy = listVariantQuantities((r as unknown as { options: unknown }).options);
+    const vars = variantsMap.get(r.id) ?? legacy;
+    return {
+      id: r.id,
+      name: r.name,
+      sku: r.sku,
+      quantity: r.quantity,
+      location: r.location,
+      condition: r.condition,
+      photoUrl: r.photoUrl,
+      tags: r.tags,
+      price: r.price,
+      lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
+      category: r.category as { name: string } | null,
+      options: (r as unknown as { options: unknown }).options,
+      variants: vars,
+    };
+  });
 
   const isLow = (it: (typeof list)[number]) =>
     (it.lowStockThreshold ?? 0) > 0 &&

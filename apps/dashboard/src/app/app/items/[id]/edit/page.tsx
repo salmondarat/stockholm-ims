@@ -7,57 +7,43 @@ export const metadata = { title: "Edit Item — Stockholm IMS" };
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  let item = await db.item
-    .findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        sku: true,
-        quantity: true,
-        location: true,
-        condition: true,
-        lowStockThreshold: true,
-        tags: true,
-        photoUrl: true,
-        price: true,
-        categoryId: true,
-        options: true,
-        // Prefer normalized variants when relation is available
-        variants: { select: { attrs: true, qty: true, sku: true } },
-      },
-    })
-    .catch(() => null);
-  if (!item) {
-    // Fallback to legacy options._variants shape when ItemVariant is not available
-    const base = await db.item.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        sku: true,
-        quantity: true,
-        location: true,
-        condition: true,
-        lowStockThreshold: true,
-        tags: true,
-        photoUrl: true,
-        price: true,
-        categoryId: true,
-        options: true,
-      },
-    });
-    if (!base) {
-      return <div className="p-6">Item not found.</div>;
+  const item = await db.item.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      sku: true,
+      quantity: true,
+      location: true,
+      condition: true,
+      lowStockThreshold: true,
+      tags: true,
+      photoUrl: true,
+      price: true,
+      categoryId: true,
+      options: true,
+    },
+  });
+  if (!item) return <div className="p-6">Item not found.</div>;
+
+  const dbAny = db as unknown as {
+    itemVariant?: {
+      findMany: (args: unknown) => Promise<Array<{ itemId: string; attrs: Record<string, string>; qty: number; sku: string | null }>>;
+    };
+  };
+  let variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
+  if (dbAny.itemVariant && typeof dbAny.itemVariant.findMany === "function") {
+    try {
+      const vrows = await dbAny.itemVariant.findMany({
+        where: { itemId: id },
+        select: { itemId: true, attrs: true, qty: true, sku: true },
+      } as unknown);
+      variants = vrows.map((v) => ({ attrs: v.attrs, qty: v.qty, sku: v.sku ?? undefined }));
+    } catch {
+      variants = listVariantQuantities(item.options);
     }
-    item = {
-      ...base,
-      variants: listVariantQuantities(base.options),
-    } as typeof item;
-  }
-  if (!item) {
-    // minimal not-found
-    return <div className="p-6">Item not found.</div>;
+  } else {
+    variants = listVariantQuantities(item.options);
   }
 
   const media = (await db.itemMedia.findMany({
@@ -95,7 +81,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       price={item.price ? Number(item.price) : 0}
       categoryName={currentCategoryName}
       optionsJson={item.options ? JSON.stringify(item.options) : ""}
-      variants={item.variants as Array<{ attrs: Record<string, string>; qty: number; sku?: string }>}
+      variants={variants}
       primaryPhotoUrl={item.photoUrl ?? null}
       categories={categories}
       s3Enabled={s3Enabled}
