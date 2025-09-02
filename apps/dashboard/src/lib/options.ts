@@ -1,4 +1,4 @@
-export function summarizeOptions(options: any, maxLen = 80): string {
+export function summarizeOptions(options: unknown, maxLen = 80): string {
   try {
     const obj = options && typeof options === "object" ? options : null;
     if (!obj) return "";
@@ -14,7 +14,7 @@ export function summarizeOptions(options: any, maxLen = 80): string {
   }
 }
 
-export function getVariantQuantitySum(options: any): number {
+export function getVariantQuantitySum(options: unknown): number {
   try {
     const variants = listVariantQuantities(options);
     return variants.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? Number(v.qty) : 0), 0);
@@ -23,7 +23,7 @@ export function getVariantQuantitySum(options: any): number {
   }
 }
 
-export function listVariantQuantities(options: any): Array<{ attrs: Record<string, string>; qty: number; sku?: string }>
+export function listVariantQuantities(options: unknown): Array<{ attrs: Record<string, string>; qty: number; sku?: string }>
 {
   try {
     const obj = options && typeof options === "object" ? options : null;

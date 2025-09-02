@@ -110,8 +110,9 @@ export default function UploadPhoto({
       // prevent form from streaming file
       if (inputRef.current) inputRef.current.value = "";
       setStatus({ kind: "uploaded" });
-    } catch (e: any) {
-      setStatus({ kind: "error", msg: e?.message || "Upload failed" });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Upload failed";
+      setStatus({ kind: "error", msg });
     }
   }
 

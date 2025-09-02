@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { db } from "@stockholm/db";
 import { auth } from "@/lib/auth";
-import { summarizeOptions, getVariantQuantitySum } from "@/lib/options";
+import { summarizeOptions, listVariantQuantities } from "@/lib/options";
 
 export const runtime = "nodejs"; // memastikan Buffer tersedia
 
@@ -13,7 +13,65 @@ export async function GET() {
     return new NextResponse("Unauthorized", { status: 401 });
   }
   // 1) Ambil data
-  const data = await db.item.findMany({ orderBy: { name: "asc" }, include: { category: { select: { name: true } } } });
+  let data: Array<{
+    id: string;
+    name: string;
+    sku: string | null;
+    quantity: number;
+    location: string | null;
+    condition: string | null;
+    photoUrl: string | null;
+    tags: unknown;
+    price: unknown;
+    lowStockThreshold: number | null;
+    category?: { name: string } | null;
+    options?: unknown;
+    variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
+  }> = [];
+  try {
+    const rows = await db.item.findMany({
+      orderBy: { name: "asc" },
+      include: {
+        category: { select: { name: true } },
+        variants: { select: { attrs: true, qty: true, sku: true } },
+      },
+    });
+    data = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      sku: r.sku,
+      quantity: r.quantity,
+      location: r.location,
+      condition: r.condition,
+      photoUrl: r.photoUrl,
+      tags: r.tags,
+      price: r.price,
+      lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
+      category: r.category as { name: string } | null,
+      options: (r as unknown as { options: unknown }).options,
+      variants: (r as unknown as { variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> }).variants,
+    }));
+  } catch {
+    const rows = await db.item.findMany({
+      orderBy: { name: "asc" },
+      include: { category: { select: { name: true } } },
+    });
+    data = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      sku: r.sku,
+      quantity: r.quantity,
+      location: r.location,
+      condition: r.condition,
+      photoUrl: r.photoUrl,
+      tags: r.tags,
+      price: r.price,
+      lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
+      category: r.category as { name: string } | null,
+      options: (r as unknown as { options: unknown }).options,
+      variants: listVariantQuantities(r.options),
+    }));
+  }
   const lowStock = data.filter(
     (x) =>
       (x.lowStockThreshold ?? 0) > 0 && x.quantity <= (x.lowStockThreshold ?? 0)
@@ -114,8 +172,9 @@ export async function GET() {
     lowStockThreshold?: number | null;
     location?: string | null;
     condition?: string | null;
-    price?: any;
-    options?: any;
+    price?: number | null;
+    options?: unknown;
+    variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
   };
 
   const drawRow = (row: ItemRow) => {
@@ -123,7 +182,7 @@ export async function GET() {
     page.drawText(text(row.name), { x: colX[0], y, size: 10, font });
     page.drawText(text(row.sku), { x: colX[1], y, size: 10, font });
     page.drawText(text(row.category?.name), { x: colX[2], y, size: 10, font });
-    const qty = getVariantQuantitySum((row as any).options) || row.quantity || 0;
+    const qty = row.variants.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0) || row.quantity || 0;
     page.drawText(String(qty), { x: colX[3], y, size: 10, font });
     page.drawText(`$${Number(row.price ?? 0).toFixed(2)}`, { x: colX[4], y, size: 10, font });
     page.drawText(summarizeOptions(row.options, 40), { x: colX[5], y, size: 9, font });

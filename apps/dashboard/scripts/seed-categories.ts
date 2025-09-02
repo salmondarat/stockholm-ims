@@ -11,7 +11,9 @@ function slugify(s: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-async function upsertCategory(db: any, name: string, parentId: string | null = null) {
+import type { PrismaClient } from "@prisma/client";
+
+async function upsertCategory(db: PrismaClient, name: string, parentId: string | null = null) {
   const slug = parentId ? `${slugify(name)}-${parentId.slice(0, 6)}` : slugify(name);
   const cat = await db.category.upsert({
     where: { slug },
@@ -48,4 +50,3 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-

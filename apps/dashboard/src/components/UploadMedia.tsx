@@ -95,8 +95,9 @@ export default function UploadMedia({
       const put = await fetch(url, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
       if (!put.ok) throw new Error(`Upload failed (${put.status})`);
       setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status: "uploaded", key } : i)));
-    } catch (e: any) {
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status: "error", error: e?.message || "Upload failed" } : i)));
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Upload failed";
+      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status: "error", error: message } : i)));
     }
   }
 

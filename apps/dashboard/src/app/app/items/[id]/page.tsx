@@ -1,14 +1,40 @@
 import Link from "next/link";
 import { db } from "@stockholm/db";
 import CodesActions from "./CodesActions";
-import { getVariantQuantitySum, listVariantQuantities } from "@/lib/options";
+import { listVariantQuantities } from "@/lib/options";
 
 export default async function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const item = await db.item.findUnique({ where: { id } });
+  let item = await db.item.findUnique({
+    where: { id },
+    include: { variants: { select: { attrs: true, qty: true, sku: true } } },
+  }).catch(() => null);
+  if (!item) {
+    // Fallback without variants relation
+    const base = await db.item.findUnique({ where: { id } });
+    if (!base) return <div className="p-6">Item not found.</div>;
+    const legacyVariants = listVariantQuantities(base.options);
+    const merged = {
+      id: base.id,
+      name: base.name,
+      sku: base.sku,
+      quantity: base.quantity,
+      location: base.location,
+      condition: base.condition,
+      photoUrl: base.photoUrl,
+      tags: base.tags,
+      price: base.price,
+      lowStockThreshold: base.lowStockThreshold,
+      options: base.options,
+      createdAt: base.createdAt,
+      updatedAt: base.updatedAt,
+      variants: legacyVariants,
+    };
+    item = merged as unknown as typeof item;
+  }
   if (!item) return <div className="p-6">Item not found.</div>;
 
-  const media = (await (db as any).itemMedia.findMany({
+  const media = (await db.itemMedia.findMany({
     where: { itemId: id },
     orderBy: [{ position: "asc" }, { createdAt: "asc" }],
     select: { id: true, url: true },
@@ -35,10 +61,10 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
 
       <div className="border rounded-lg p-4">
         <div className="text-sm font-medium mb-2">Variants</div>
-        {renderOptions((item as any).options)}
+        {renderOptions(item.options)}
         {(() => {
-          const variants = listVariantQuantities((item as any).options);
-          if (!variants.length) return null;
+          const variants = item.variants as Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
+          if (!variants || !variants.length) return null;
           return (
             <div className="mt-3 space-y-1">
               <div className="text-xs text-gray-500">Quantities by variant</div>
@@ -67,7 +93,11 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
           <div className="text-sm text-gray-500">SKU</div>
           <div className="text-base">{item.sku ?? "-"}</div>
           <div className="text-sm text-gray-500 mt-4">Quantity</div>
-          <div className="text-base">{(() => { const raw=(item as any).options; const hasVariants = raw && typeof raw==='object' && Array.isArray(raw._variants); const sum=getVariantQuantitySum(raw); return hasVariants ? sum : item.quantity; })()}</div>
+          <div className="text-base">{(() => {
+            const sum = item.variants.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0);
+            const hasVariants = item.variants.length > 0;
+            return hasVariants ? sum : item.quantity;
+          })()}</div>
           <div className="text-sm text-gray-500 mt-4">Low-stock threshold</div>
           <div className="text-base">{item.lowStockThreshold ?? 0}</div>
           <div className="text-sm text-gray-500 mt-4">Location</div>
@@ -95,12 +125,12 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
   );
 }
 
-function renderOptions(options: any) {
+function renderOptions(options: unknown) {
   try {
-    const obj = options && typeof options === "object" ? options : null;
+    const obj: Record<string, unknown> | null = options && typeof options === "object" ? (options as Record<string, unknown>) : null;
     if (!obj) return <div className="text-sm text-gray-500">-</div>;
     const entries = Object.entries(obj).filter(
-      ([k, v]) => k && Array.isArray(v) && (v as unknown[]).length
+      ([k, v]) => !String(k).startsWith("_") && Array.isArray(v) && (v as unknown[]).length
     ) as Array<[string, string[]]>;
     if (!entries.length) return <div className="text-sm text-gray-500">-</div>;
     return (
@@ -123,3 +153,4 @@ function renderOptions(options: any) {
     return <div className="text-sm text-gray-500">-</div>;
   }
 }
+export const revalidate = 0; // always render fresh item page

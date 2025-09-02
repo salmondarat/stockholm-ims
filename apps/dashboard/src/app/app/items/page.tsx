@@ -1,8 +1,9 @@
 import { db } from "@stockholm/db";
 import { updateQuantity, deleteItem } from "./actions";
 import Link from "next/link";
-import { summarizeOptions, getVariantQuantitySum } from "@/lib/options";
+// import { summarizeOptions } from "@/lib/options";
 import VariantDetailsToggle from "@/components/VariantDetailsToggle";
+import { listVariantQuantities } from "@/lib/options";
 
 export const metadata = { title: "Items — Stockholm IMS" };
 
@@ -17,7 +18,66 @@ export default async function ItemsPage({
   const filter = typeof params?.filter === "string" ? params.filter : undefined;
   const skuQuery = typeof params?.sku === "string" ? params.sku : undefined;
 
-  const list = await db.item.findMany({ orderBy: { createdAt: "asc" }, include: { category: { select: { name: true } } } });
+  // Try to load normalized variants; fallback to legacy options._variants when the relation is not available
+  let list: Array<{
+    id: string;
+    name: string;
+    sku: string | null;
+    quantity: number;
+    location: string | null;
+    condition: string | null;
+    photoUrl: string | null;
+    tags: unknown;
+    price: unknown;
+    lowStockThreshold: number | null;
+    category: { name: string } | null;
+    options: unknown;
+    variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
+  }> = [];
+  try {
+    const rows = await db.item.findMany({
+      orderBy: { createdAt: "asc" },
+      include: {
+        category: { select: { name: true } },
+        variants: { select: { attrs: true, qty: true, sku: true } },
+      },
+    });
+    list = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      sku: r.sku,
+      quantity: r.quantity,
+      location: r.location,
+      condition: r.condition,
+      photoUrl: r.photoUrl,
+      tags: r.tags,
+      price: r.price,
+      lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
+      category: r.category as { name: string } | null,
+      options: (r as unknown as { options: unknown }).options,
+      variants: (r as unknown as { variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> }).variants,
+    }));
+  } catch {
+    const rows = await db.item.findMany({
+      orderBy: { createdAt: "asc" },
+      include: { category: { select: { name: true } } },
+    });
+    list = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      sku: r.sku,
+      quantity: r.quantity,
+      location: r.location,
+      condition: r.condition,
+      photoUrl: r.photoUrl,
+      tags: r.tags,
+      price: r.price,
+      lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
+      category: r.category as { name: string } | null,
+      options: (r as unknown as { options: unknown }).options,
+      variants: listVariantQuantities(r.options),
+    }));
+  }
 
   const isLow = (it: (typeof list)[number]) =>
     (it.lowStockThreshold ?? 0) > 0 &&
@@ -88,8 +148,6 @@ export default async function ItemsPage({
           <tbody>
             {data.map((it) => {
               const low = isLow(it);
-              const rawOpts = (it as any).options;
-              const optsPlain = rawOpts ? JSON.parse(JSON.stringify(rawOpts)) : null;
               return (
                 <tr key={it.id} className="border-b">
                   <td className="p-2">
@@ -107,21 +165,18 @@ export default async function ItemsPage({
                   <td className="p-2 align-top">
                     <div className="flex items-baseline justify-between gap-2">
                       <Link href={`/app/items/${it.id}`}>{it.name}</Link>
-                      <VariantDetailsToggle options={optsPlain} inline />
                     </div>
                     <div className="text-[11px] text-gray-500">SKU: {it.sku ?? '-'}</div>
-                    {summarizeOptions(rawOpts) && (
-                      <div className="text-[11px] text-gray-500 mt-0.5">
-                        {summarizeOptions(rawOpts)}
-                      </div>
-                    )}
+                    {/* Move Show variants toggle to the bottom of the main SKU block */}
+                    <div className="mt-1">
+                      <VariantDetailsToggle variants={it.variants as Array<{ attrs: Record<string, string>; qty: number; sku?: string }>} />
+                    </div>
                   </td>
                   <td className="p-2">{it.category?.name ?? "-"}</td>
                   <td className="p-2 text-right align-top">
                     {(() => {
-                      const sum = getVariantQuantitySum(optsPlain);
-                      const raw = optsPlain;
-                      const hasVariants = raw && typeof raw === 'object' && Array.isArray(raw._variants);
+                      const sum = it.variants.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0);
+                      const hasVariants = it.variants.length > 0;
                       if (hasVariants) {
                         return (
                           <div className="text-right">
@@ -206,3 +261,4 @@ export default async function ItemsPage({
     </main>
   );
 }
+export const revalidate = 0; // always render fresh list

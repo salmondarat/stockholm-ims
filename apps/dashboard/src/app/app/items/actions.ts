@@ -138,7 +138,7 @@ async function ensureCategoryByName(name: string): Promise<string> {
     const again = await db.category.findFirst({ where: { slug } });
     if (again) return again.id;
     // Fallback: create with slightly modified slug
-    const alt = await db.category.create({ data: { name: name.trim(), slug: `${slug}-${Date.now()}` } as any });
+    const alt = await db.category.create({ data: { name: name.trim(), slug: `${slug}-${Date.now()}` } });
     return alt.id;
   }
 }
@@ -293,7 +293,7 @@ export async function createItemAction(
       }
     }
 
-    // Optional variants JSON: [{ attrs: { Size: "M", Color: "Red" }, qty: 10 }, ...]
+    // Optional variants JSON: [{ attrs: { Size: "M", Color: "Red" }, qty: 10, sku?: string }, ...]
     let variantsArr: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
     const variantsRaw = form.get("variants");
     if (typeof variantsRaw === "string" && variantsRaw.trim()) {
@@ -312,6 +312,24 @@ export async function createItemAction(
         /* ignore */
       }
     }
+
+    // Derive attribute arrays from variants to keep options consistent
+    const deriveOptionsFromVariants = (
+      variants: Array<{ attrs: Record<string, string> }>
+    ): Record<string, string[]> => {
+      const map = new Map<string, Set<string>>();
+      for (const v of variants) {
+        for (const [k, val] of Object.entries(v.attrs || {})) {
+          const key = String(k);
+          const s = map.get(key) ?? new Set<string>();
+          if (val) s.add(String(val));
+          map.set(key, s);
+        }
+      }
+      const out: Record<string, string[]> = {};
+      for (const [k, set] of map.entries()) out[k] = Array.from(set.values());
+      return out;
+    };
 
     // Resolve category by name if provided, else use categoryId
     const categoryId: string | null = await (async () => {
@@ -341,9 +359,9 @@ export async function createItemAction(
         options: optionsEnabled
           ? ({
               ...(optionsObj || {}),
-              ...(variantsProvided ? { _variants: variantsArr } : {}),
-            } as any)
-          : ({} as any),
+              ...(variantsProvided ? deriveOptionsFromVariants(variantsArr) : {}),
+            } as Record<string, unknown>)
+          : {},
         // keep first media as legacy photoUrl for list view
         photoUrl: mediaUrls[0] ?? null,
       },
@@ -352,8 +370,20 @@ export async function createItemAction(
 
     // insert media rows
     if (mediaUrls.length) {
-      await (db as any).itemMedia.createMany({
+      await db.itemMedia.createMany({
         data: mediaUrls.map((url, idx) => ({ itemId: inserted.id, url, position: idx })),
+      });
+    }
+
+    // insert variant rows when provided
+    if (variantsProvided && variantsArr.length) {
+      await db.itemVariant.createMany({
+        data: variantsArr.map((v) => ({
+          itemId: inserted.id,
+          sku: v.sku ?? null,
+          qty: v.qty,
+          attrs: v.attrs,
+        })),
       });
     }
 
@@ -437,7 +467,7 @@ export async function updateItemAction(
     // Apply all media operations atomically
     await db.$transaction(async (tx) => {
       // Parse options JSON if provided
-      let optionsObj: Record<string, unknown> | null = null;
+      let optionsObj: Record<string, unknown> | null | undefined = null;
       if (typeof parsed.options === "string") {
         const str = parsed.options.trim();
         if (optionsEnabled && str) {
@@ -445,12 +475,12 @@ export async function updateItemAction(
             const o = JSON.parse(str);
             if (o && typeof o === "object") optionsObj = o as Record<string, unknown>;
           } catch {
-            optionsObj = undefined as any; // leave unchanged when invalid
+            optionsObj = undefined; // leave unchanged when invalid
           }
         } else if (!optionsEnabled) {
           optionsObj = null; // explicit clear when disabled
         } else {
-          optionsObj = undefined as any; // keep existing when enabled but empty
+          optionsObj = undefined; // keep existing when enabled but empty
         }
       }
 
@@ -487,22 +517,63 @@ export async function updateItemAction(
         return null;
       })();
 
-      const variantsProvided = optionsEnabled && typeof variantsRaw === "string" && variantsRaw.trim().length > 0;
-      const quantityFromVariants = variantsArr.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0);
+      // Determine whether to use variant-derived quantity
+      // Prefer incoming variants JSON when present; otherwise fall back to existing ItemVariant rows
+      const hasIncomingVariants = typeof variantsRaw === "string" && variantsRaw.trim().length > 0;
+      const existingVariants = await tx.itemVariant.findMany({
+        where: { itemId: id },
+        select: { qty: true, sku: true, attrs: true },
+      });
+      const variantsProvided = optionsEnabled && (hasIncomingVariants || existingVariants.length > 0);
+      const variantsToSum = hasIncomingVariants ? variantsArr : existingVariants;
+      const quantityFromVariants = variantsToSum.reduce(
+        (acc, v) => acc + (Number.isFinite(v?.qty as number) ? Number(v?.qty) : 0),
+        0
+      );
       // Build final options merging existing when needed
       const baseOptions: Record<string, unknown> = (() => {
-        if (typeof optionsObj === "undefined") {
-          const ex = existing?.options;
-          return ex && typeof ex === "object" ? ({ ...(ex as any) } as Record<string, unknown>) : {};
-        }
-        if (optionsObj === null) return {};
-        return { ...(optionsObj || {}) };
-      })();
+      if (typeof optionsObj === "undefined") {
+        const ex = existing?.options;
+        return ex && typeof ex === "object" ? ({ ...(ex as Record<string, unknown>) } as Record<string, unknown>) : {};
+      }
+      if (optionsObj === null) return {};
+      return { ...(optionsObj || {}) };
+    })();
 
       if (variantsProvided) {
-        (baseOptions as any)._variants = variantsArr;
+        // Merge derived attribute arrays from the chosen variants
+        const chosenVariants = hasIncomingVariants ? variantsArr : existingVariants;
+        const map = new Map<string, Set<string>>();
+        for (const v of chosenVariants) {
+          const attrs = (v as { attrs?: Record<string, string> }).attrs || {};
+          for (const [k, val] of Object.entries(attrs)) {
+            const key = String(k);
+            const s = map.get(key) ?? new Set<string>();
+            if (val) s.add(String(val));
+            map.set(key, s);
+          }
+        }
+        const attrsFromVariants: Record<string, string[]> = {};
+        for (const [k, set] of map.entries()) attrsFromVariants[k] = Array.from(set.values());
+        for (const [k, list] of Object.entries(attrsFromVariants)) {
+          const existingList = Array.isArray(baseOptions[k])
+            ? (baseOptions[k] as unknown[]).map(String)
+            : [];
+          const merged = Array.from(new Set([...existingList, ...list]));
+          baseOptions[k] = merged;
+        }
+        // Replace ItemVariant rows if incoming provided; otherwise keep existing
+        if (hasIncomingVariants) {
+          await tx.itemVariant.deleteMany({ where: { itemId: id } });
+          if (variantsArr.length) {
+            await tx.itemVariant.createMany({
+              data: variantsArr.map((v) => ({ itemId: id, sku: v.sku ?? null, qty: v.qty, attrs: v.attrs })),
+            });
+          }
+        }
       } else if (typeof optionsObj !== "undefined") {
-        delete (baseOptions as any)._variants;
+        // No variants at all; ensure ItemVariant is cleared when disabling
+        await tx.itemVariant.deleteMany({ where: { itemId: id } });
       }
 
       await tx.item.update({
@@ -517,19 +588,19 @@ export async function updateItemAction(
           tags: tagsArray ?? undefined,
           price: parsed.price ?? null,
           categoryId: resolvedCategoryId,
-          options: baseOptions as any,
+          options: baseOptions,
         },
       });
 
       // Delete selected media
       for (const mid of removeIds) {
-        await (tx as any).itemMedia.deleteMany({ where: { id: mid, itemId: id } });
+        await tx.itemMedia.deleteMany({ where: { id: mid, itemId: id } });
       }
 
       // Insert new media appended at the end
-      const currentCount = await (tx as any).itemMedia.count({ where: { itemId: id } });
+      const currentCount = await tx.itemMedia.count({ where: { itemId: id } });
       if (mediaUrls.length) {
-        await (tx as any).itemMedia.createMany({
+        await tx.itemMedia.createMany({
           data: mediaUrls.map((url, idx) => ({ id: crypto.randomUUID(), itemId: id, url, position: currentCount + idx })),
         });
       }
@@ -539,17 +610,17 @@ export async function updateItemAction(
         for (let i = 0; i < orderIds.length; i++) {
           const mid = orderIds[i];
           if (removeIds.includes(mid)) continue;
-          await (tx as any).itemMedia.update({ where: { id: mid }, data: { position: i } });
+          await tx.itemMedia.update({ where: { id: mid }, data: { position: i } });
         }
       }
 
       // Recompute primary photoUrl from remaining media (or new additions)
       let photoUrl: string | null = null;
       if (coverMediaId) {
-        const cover = (await (tx as any).itemMedia.findUnique({ where: { id: coverMediaId }, select: { url: true } })) as { url: string } | null;
+        const cover = (await tx.itemMedia.findUnique({ where: { id: coverMediaId }, select: { url: true } })) as { url: string } | null;
         photoUrl = cover?.url ?? null;
       } else {
-        const first = (await (tx as any).itemMedia.findFirst({
+        const first = (await tx.itemMedia.findFirst({
           where: { itemId: id },
           orderBy: [{ position: "asc" }, { createdAt: "asc" }],
           select: { url: true },
@@ -607,7 +678,7 @@ async function removeFileIfExists(publicUrl: string | null) {
 
 export async function deleteItem(id: string) {
   const row = await db.item.findUnique({ where: { id } });
-  const media = (await (db as any).itemMedia.findMany({
+  const media = (await db.itemMedia.findMany({
     where: { itemId: id },
     select: { url: true },
   })) as Array<{ url: string }>;
@@ -623,7 +694,7 @@ export async function deleteItem(id: string) {
 
 export async function getLowStock() {
   // Prisma cannot filter with column-to-column comparison; use raw SQL
-  const rows = await db.$queryRaw<any[]>`
+  const rows = await db.$queryRaw<unknown[]>`
     SELECT * FROM "items" WHERE "quantity" <= "low_stock_threshold"
   `;
   return rows;

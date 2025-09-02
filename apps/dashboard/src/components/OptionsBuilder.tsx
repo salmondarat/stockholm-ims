@@ -6,7 +6,8 @@ type AttributeRow = { id: string; name: string; valuesText: string };
 
 function uuid() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return (crypto as any).randomUUID();
+    const c = crypto as Crypto & { randomUUID?: () => string };
+    if (typeof c.randomUUID === "function") return c.randomUUID();
   }
   return Math.random().toString(36).slice(2);
 }
@@ -14,10 +15,12 @@ function uuid() {
 export default function OptionsBuilder({
   defaultValue = "",
   baseSku = "",
+  initialVariants,
   onSummaryChange,
 }: {
   defaultValue?: string;
   baseSku?: string;
+  initialVariants?: Array<{ attrs?: Record<string, string>; qty?: number; sku?: string }>;
   onSummaryChange?: (info: { hasVariants: boolean; sumQty: number }) => void;
 }) {
   const [enabled, setEnabled] = useState(false);
@@ -45,23 +48,29 @@ export default function OptionsBuilder({
           setEnabled(true);
         }
         // bootstrap variant quantities
-        const variants = Array.isArray((obj as any)._variants)
-          ? ((obj as any)._variants as Array<{ attrs?: Record<string, string>; qty?: number; sku?: string }> )
+        const rawVariants =
+          (obj as { _variants?: unknown; __variants?: unknown })._variants ??
+          (obj as { __variants?: unknown }).__variants;
+        const variantsFromJson = Array.isArray(rawVariants)
+          ? (rawVariants as Array<{ attrs?: Record<string, string>; qty?: number; sku?: string }>)
           : [];
+        const seed = Array.isArray(initialVariants) && initialVariants.length
+          ? initialVariants
+          : variantsFromJson;
         const map: Record<string, VariantData> = {};
-        for (let i = 0; i < variants.length; i++) {
-          const v = variants[i];
+        for (let i = 0; i < seed.length; i++) {
+          const v = seed[i];
           const key = variantKey(v.attrs || {});
           const q = Number(v.qty || 0);
           const sku = typeof v.sku === "string" && v.sku ? v.sku : undefined;
           if (key) map[key] = { qty: q, sku };
         }
-        setVariantMap(map);
+        if (Object.keys(map).length) setVariantMap(map);
       }
     } catch {
       /* ignore */
     }
-  }, [defaultValue]);
+  }, [defaultValue, initialVariants]);
 
   const json = useMemo(() => {
     if (!enabled) return "";
@@ -136,7 +145,30 @@ export default function OptionsBuilder({
     variantsRef.current.value = combos.length ? JSON.stringify(arr) : "";
     const sum = arr.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? Number(v.qty) : 0), 0);
     onSummaryChange?.({ hasVariants: combos.length > 0, sumQty: sum });
-  }, [variantMap, combos, baseSku]);
+  }, [variantMap, combos, baseSku, onSummaryChange]);
+
+  // Ensure hidden inputs are up-to-date right at submit time
+  useEffect(() => {
+    const form = hiddenRef.current?.form;
+    if (!form) return;
+    const onSubmit = () => {
+      // Recompute options JSON
+      if (hiddenRef.current) hiddenRef.current.value = json;
+      // Recompute variants array in submit moment
+      if (variantsRef.current) {
+        const arr = combos.map((attrs, idx) => {
+          const key = variantKey(attrs);
+          const ent = variantMap[key] || { qty: 0, sku: undefined };
+          let sku = ent.sku;
+          if (!sku && baseSku) sku = `${baseSku}-${idx + 1}`;
+          return { attrs, qty: ent.qty ?? 0, sku };
+        });
+        variantsRef.current.value = combos.length ? JSON.stringify(arr) : "";
+      }
+    };
+    form.addEventListener("submit", onSubmit);
+    return () => form.removeEventListener("submit", onSubmit);
+  }, [json, combos, variantMap, baseSku]);
 
   const setQty = (attrs: Record<string, string>, qty: number) => {
     const key = variantKey(attrs);
@@ -153,14 +185,7 @@ export default function OptionsBuilder({
       .map(([k, v]) => `${k}=${v}`)
       .join("|");
   }
-  function parseVariantKey(key: string): Record<string, string> {
-    const out: Record<string, string> = {};
-    for (const part of key.split("|")) {
-      const [k, v] = part.split("=");
-      if (k && v) out[k] = v;
-    }
-    return out;
-  }
+  // parseVariantKey() removed (unused)
 
   const addRow = () => setRows((r) => [...r, { id: uuid(), name: "", valuesText: "" }]);
   const removeRow = (id: string) => setRows((r) => r.filter((x) => x.id !== id));
@@ -272,7 +297,7 @@ export default function OptionsBuilder({
                   );
                 })}
               </div>
-              {Array.from(skuCounts.entries()).some(([_, n]) => n > 1) && (
+              {Array.from(skuCounts.entries()).some(([, n]) => n > 1) && (
                 <div className="text-xs text-red-600 mt-2">Duplicate variant SKUs detected. Please ensure each SKU is unique.</div>
               )}
             </div>

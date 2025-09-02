@@ -40,6 +40,8 @@ model Item {
 
   // New: related media items (images, etc.)
   media             ItemMedia[]
+  // New: normalized variants (attrs + sku + qty)
+  variants          ItemVariant[]
 
   @@map("items")
 }
@@ -68,6 +70,19 @@ model ItemMedia {
 
   @@index([itemId], map: "idx_item_media_item_id")
   @@map("item_media")
+}
+
+model ItemVariant {
+  id         String   @id @default(uuid()) @db.Uuid
+  itemId     String   @db.Uuid @map("item_id")
+  item       Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  sku        String?
+  qty        Int      @default(0)
+  attrs      Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([itemId], map: "idx_item_variants_item_id")
+  @@map("item_variants")
 }
 
 // Removed unused tables not present in DB migrations to match current app

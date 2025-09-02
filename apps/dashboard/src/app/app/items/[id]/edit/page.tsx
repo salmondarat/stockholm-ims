@@ -1,4 +1,5 @@
 import { db } from "@stockholm/db";
+import { listVariantQuantities } from "@/lib/options";
 import EditItemClient from "./EditItemClient";
 
 export const metadata = { title: "Edit Item — Stockholm IMS" };
@@ -6,13 +7,60 @@ export const metadata = { title: "Edit Item — Stockholm IMS" };
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const item = await db.item.findUnique({ where: { id }, select: { id: true, name: true, sku: true, quantity: true, location: true, condition: true, lowStockThreshold: true, tags: true, photoUrl: true, price: true, categoryId: true, options: true } });
+  let item = await db.item
+    .findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        quantity: true,
+        location: true,
+        condition: true,
+        lowStockThreshold: true,
+        tags: true,
+        photoUrl: true,
+        price: true,
+        categoryId: true,
+        options: true,
+        // Prefer normalized variants when relation is available
+        variants: { select: { attrs: true, qty: true, sku: true } },
+      },
+    })
+    .catch(() => null);
+  if (!item) {
+    // Fallback to legacy options._variants shape when ItemVariant is not available
+    const base = await db.item.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        quantity: true,
+        location: true,
+        condition: true,
+        lowStockThreshold: true,
+        tags: true,
+        photoUrl: true,
+        price: true,
+        categoryId: true,
+        options: true,
+      },
+    });
+    if (!base) {
+      return <div className="p-6">Item not found.</div>;
+    }
+    item = {
+      ...base,
+      variants: listVariantQuantities(base.options),
+    } as typeof item;
+  }
   if (!item) {
     // minimal not-found
     return <div className="p-6">Item not found.</div>;
   }
 
-  const media = (await (db as any).itemMedia.findMany({
+  const media = (await db.itemMedia.findMany({
     where: { itemId: id },
     orderBy: [{ position: "asc" }, { createdAt: "asc" }],
     select: { id: true, url: true },
@@ -45,9 +93,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       }}
       media={media}
       price={item.price ? Number(item.price) : 0}
-      categoryId={item.categoryId ?? ""}
       categoryName={currentCategoryName}
       optionsJson={item.options ? JSON.stringify(item.options) : ""}
+      variants={item.variants as Array<{ attrs: Record<string, string>; qty: number; sku?: string }>}
       primaryPhotoUrl={item.photoUrl ?? null}
       categories={categories}
       s3Enabled={s3Enabled}

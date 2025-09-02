@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import UploadMedia from "@/components/UploadMedia";
@@ -26,9 +27,9 @@ export default function EditItemClient({
   media,
   primaryPhotoUrl = null,
   price = 0,
-  categoryId = "",
   categoryName = "",
   optionsJson = "",
+  variants = [],
   categories = [],
   s3Enabled = false,
 }: {
@@ -45,12 +46,13 @@ export default function EditItemClient({
   media: Array<{ id: string; url: string }>;
   primaryPhotoUrl?: string | null;
   price?: number;
-  categoryId?: string;
   categoryName?: string;
   optionsJson?: string;
+  variants?: Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
   categories?: Array<{ id: string; name: string; parentId: string | null }>;
   s3Enabled?: boolean;
 }) {
+  const router = useRouter();
   const [state, formAction] = useActionState<UpdateItemState, FormData>(updateItemAction, { ok: false });
   const formRef = useRef<HTMLFormElement | null>(null);
   const [storage, setStorage] = useState<"local" | "s3">(s3Enabled ? "s3" : "local");
@@ -69,8 +71,10 @@ export default function EditItemClient({
     if (!state.ok) return;
     setShowSaved(true);
     const t = setTimeout(() => setShowSaved(false), 3000);
+    // refresh current route to ensure any client-side caches reflect latest data
+    router.refresh();
     return () => clearTimeout(t);
-  }, [state.ok]);
+  }, [state.ok, router]);
 
   const toggleRemove = (id: string) =>
     setRemoved((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -105,7 +109,7 @@ export default function EditItemClient({
       )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Edit Item</h1>
-        <Link href="/app/items" className="underline text-sm">
+        <Link href="/app/items" prefetch={false} className="underline text-sm">
           Back to Items
         </Link>
       </div>
@@ -168,7 +172,7 @@ export default function EditItemClient({
           <p className="text-xs text-gray-500 mt-1">cable, usb-c, black</p>
         </div>
 
-        <OptionsBuilder defaultValue={optionsJson} baseSku={sku} onSummaryChange={setVariantInfo} />
+        <OptionsBuilder defaultValue={optionsJson} baseSku={sku} initialVariants={variants} onSummaryChange={setVariantInfo} />
 
         {/* Existing media list with reorder and cover selector */}
         <div className="space-y-2">

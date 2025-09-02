@@ -66,10 +66,11 @@ export async function POST(req: Request) {
     const url = await getSignedUrl(getS3()!, putCmd, { expiresIn: 60 }); // 60s
 
     return NextResponse.json({ url, key });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err);
+    const message = err instanceof Error ? err.message : "Bad Request";
     return NextResponse.json(
-      { error: err.message ?? "Bad Request" },
+      { error: message },
       { status: 400 }
     );
   }

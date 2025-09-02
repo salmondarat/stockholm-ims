@@ -11,7 +11,7 @@ export default async function AppHome() {
     db.category.count(),
   ]);
   const totalQty = _agg._sum.quantity ?? 0;
-  const totalValueRow = await db.$queryRaw<{ total: any }[]>`
+  const totalValueRow = await db.$queryRaw<{ total: unknown }[]>`
     SELECT COALESCE(SUM("quantity" * COALESCE("price", 0)), 0) AS total FROM "items"
   `;
   const totalValue = Number(totalValueRow?.[0]?.total ?? 0);
@@ -63,7 +63,7 @@ export default async function AppHome() {
             </thead>
             <tbody>
               {recent.map((r) => {
-                const opts = summarizeOptions(r.options as any);
+                const opts = summarizeOptions(r.options);
                 return (
                   <tr key={r.id} className="border-b align-top">
                     <td className="p-2">

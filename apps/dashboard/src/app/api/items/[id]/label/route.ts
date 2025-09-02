@@ -17,7 +17,7 @@ async function generateQrPng(text: string, size = 200) {
 
 async function generateBarcodePng(text: string, width = 300, height = 70, includeText = true) {
   const bwipjs = (await import("bwip-js")).default as unknown as {
-    toBuffer: (opts: any) => Promise<Buffer>;
+    toBuffer: (opts: Record<string, unknown>) => Promise<Buffer>;
   };
   return bwipjs.toBuffer({
     bcid: "code128",

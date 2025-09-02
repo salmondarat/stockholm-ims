@@ -3,9 +3,21 @@
 import { useState } from "react";
 import { listVariantQuantities } from "@/lib/options";
 
-export default function VariantDetailsToggle({ options, inline = false }: { options: any; inline?: boolean }) {
+type VariantRow = { attrs: Record<string, string>; qty: number; sku?: string };
+
+export default function VariantDetailsToggle({
+  variants,
+  options,
+  inline = false,
+}: {
+  variants?: VariantRow[];
+  options?: unknown;
+  inline?: boolean;
+}) {
   const [open, setOpen] = useState(false);
-  const list = listVariantQuantities(options);
+  const list: VariantRow[] = Array.isArray(variants) && variants.length
+    ? variants
+    : listVariantQuantities(options);
   if (!list.length) return null;
   return (
     <div className={inline ? "inline-block ml-2" : "mt-1"}>

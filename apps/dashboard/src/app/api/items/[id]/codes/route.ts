@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 // Defer bwip-js import to avoid any ESM interop issues at top-level
 async function generateBarcodePng(text: string, width = 480, height = 120) {
   const bwipjs = (await import("bwip-js")).default as unknown as {
-    toBuffer: (opts: any) => Promise<Buffer>;
+    toBuffer: (opts: Record<string, unknown>) => Promise<Buffer>;
   };
 
   // Use Code 128 for general SKU support (alphanumeric)
