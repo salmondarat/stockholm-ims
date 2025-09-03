@@ -118,7 +118,17 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Reserve vertical scrollbar space to prevent layout shift when content height changes */
+  html {
+    scrollbar-gutter: stable;
+  }
   body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Soft motion + page transition */
+@keyframes fade-in-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.page-transition { animation: fade-in-up .2s ease both; }
+a, button { transition: color .15s ease, background-color .15s ease, border-color .15s ease, transform .12s ease; }
+button:active { transform: translateY(.5px) scale(.99); }

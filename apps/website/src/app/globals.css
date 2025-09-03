@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
+/* Light theme (default) */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a; /* slate-900 */
+  --muted: #475569;      /* slate-600 */
+  --card: #ffffff;
+  --border-color: #e5e7eb;
+  --primary: #2563eb;    /* blue-600 */
+  --primary-foreground: #ffffff;
+  --brand: #ef4444;      /* red-500 for CTA */
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --background: #0b1220; /* deep navy */
+  --foreground: #e6edf7; /* near-white for readability */
+  --muted: #a8b3cf;      /* secondary text */
+  --card: #0f1a33;       /* card background */
+  --border-color: #ffffff1a; /* white/10 */
+  --primary: #2563eb;
+  --primary-foreground: #eaf2ff;
+  --brand: #ef4444;
 }
 
 @theme inline {
@@ -12,15 +31,28 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Single dark theme for the marketing site */
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Utilities used in the site */
+.text-muted { color: var(--muted); }
+.bg-card { background-color: var(--card); }
+.border-subtle { border-color: var(--border-color); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.6rem 1rem; border-radius:.5rem; border:1px solid var(--border-color); }
+.btn-primary { background: var(--primary); color: var(--primary-foreground); border-color: transparent; }
+.btn-outline { background: transparent; color: var(--foreground); }
+.btn:hover { filter: brightness(1.05); }
+.btn-pill { border-radius: 9999px; padding:.55rem 1rem; }
+.btn-cta { background: var(--brand); color: white; border-color: transparent; }
+
+/* Motion: soft transitions and page fade */
+a, button, .btn, nav a, [role="menuitem"] { transition: color .15s ease, background-color .15s ease, border-color .15s ease, transform .12s ease; }
+button:active, .btn:active { transform: translateY(0.5px) scale(0.99); }
+
+@keyframes fade-in-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.page-transition { animation: fade-in-up .25s ease both; }

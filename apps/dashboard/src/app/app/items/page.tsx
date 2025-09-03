@@ -93,7 +93,7 @@ export default async function ItemsPage({
 
   return (
     <main className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Items</h1>
         <div className="flex items-center gap-2">
           <Link
@@ -112,7 +112,7 @@ export default async function ItemsPage({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
         <Link
           href="/app/items"
           className={`px-2 py-1 rounded border ${filter !== "low" ? "bg-gray-100" : "bg-white"}`}
@@ -130,7 +130,72 @@ export default async function ItemsPage({
         </Link>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile: card list */}
+      <div className="md:hidden">
+        <div className="divide-y rounded-md border bg-white">
+          {data.map((it) => {
+            const low = isLow(it);
+            const sum = it.variants.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0);
+            const hasVariants = it.variants.length > 0;
+            return (
+              <div key={it.id} className="p-3">
+                <div className="flex gap-3">
+                  <div className="shrink-0">
+                    {it.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={it.photoUrl} alt="" className="h-16 w-16 object-cover rounded-md border" />
+                    ) : (
+                      <div className="h-16 w-16 grid place-items-center text-xs text-gray-400 border rounded-md">—</div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <Link href={`/app/items/${it.id}`} className="font-medium truncate">{it.name}</Link>
+                      {low ? (
+                        <span className="text-[10px] rounded px-1.5 py-0.5 bg-red-100 text-red-700">Low</span>
+                      ) : (
+                        <span className="text-[10px] rounded px-1.5 py-0.5 bg-green-100 text-green-700">OK</span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-gray-500">SKU: {it.sku ?? '-'}</div>
+                    <div className="mt-1 text-sm flex items-center gap-4">
+                      <div className="font-medium">{hasVariants ? sum : it.quantity}</div>
+                      {hasVariants && <div className="text-[11px] text-gray-500">from variants</div>}
+                      {typeof it.price === "object" || typeof it.price === "number" ? (
+                        <div className="ml-auto text-right text-sm">{"$" + Number(it.price || 0).toFixed(2)}</div>
+                      ) : (
+                        <div className="ml-auto text-right text-sm">{"$0.00"}</div>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-gray-500 mt-1">{it.category?.name ?? '-'} • {it.location ?? '-'}</div>
+                    <div className="mt-1">
+                      <VariantDetailsToggle inline variants={it.variants as Array<{ attrs: Record<string, string>; qty: number; sku?: string }>} />
+                    </div>
+                    <div className="mt-2 flex items-center gap-2 text-xs">
+                      <Link href={`/app/items/${it.id}/edit`} className="px-2 py-1 border rounded">Edit</Link>
+                      <form
+                        action={async () => {
+                          "use server";
+                          await deleteItem(it.id);
+                        }}
+                      >
+                        <button className="px-2 py-1 border rounded">Delete</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {!data.length && (
+            <div className="p-6 text-center text-gray-500">{filter === "low" ? "No low-stock items." : "No items yet."}</div>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop/Tablet: table with horizontal scroll if needed */}
+      {/* Fix layout shift when toggling variant details by reserving space */}
+      <div className="hidden md:block overflow-x-auto min-h-[480px]">
         <table className="w-full text-sm border-collapse min-w-[920px]">
           <thead>
             <tr className="border-b bg-gray-50">
@@ -163,14 +228,14 @@ export default async function ItemsPage({
                       <span className="text-xs text-gray-400">—</span>
                     )}
                   </td>
-                  <td className="p-2 align-top">
+                  <td className="p-2 align-top relative">
                     <div className="flex items-baseline justify-between gap-2">
                       <Link href={`/app/items/${it.id}`}>{it.name}</Link>
                     </div>
                     <div className="text-[11px] text-gray-500">SKU: {it.sku ?? '-'}</div>
                     {/* Move Show variants toggle to the bottom of the main SKU block */}
                     <div className="mt-1">
-                      <VariantDetailsToggle variants={it.variants as Array<{ attrs: Record<string, string>; qty: number; sku?: string }>} />
+                      <VariantDetailsToggle inline variants={it.variants as Array<{ attrs: Record<string, string>; qty: number; sku?: string }>} />
                     </div>
                   </td>
                   <td className="p-2">{it.category?.name ?? "-"}</td>

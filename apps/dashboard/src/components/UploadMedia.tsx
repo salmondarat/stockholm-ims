@@ -172,7 +172,7 @@ export default function UploadMedia({
       </div>
 
       {!!items.length && (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {items.map((it) => (
             <div key={it.id} className="relative border rounded-md p-2">
               {it.preview ? (

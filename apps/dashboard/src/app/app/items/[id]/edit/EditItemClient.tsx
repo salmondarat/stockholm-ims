@@ -127,7 +127,7 @@ export default function EditItemClient({
           <input name="sku" required value={sku} onChange={(e) => setSku(e.target.value)} className="w-full border rounded px-3 py-2" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm mb-1">Quantity *</label>
             <input type="number" name="quantity" min={0} defaultValue={item.quantity} required className="w-full border rounded px-3 py-2 disabled:bg-gray-50" readOnly={variantInfo.hasVariants} />
@@ -141,7 +141,7 @@ export default function EditItemClient({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm mb-1">Price</label>
             <input type="number" name="price" min={0} step="0.01" defaultValue={price} className="w-full border rounded px-3 py-2" />
@@ -155,7 +155,7 @@ export default function EditItemClient({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm mb-1">Location</label>
             <input name="location" defaultValue={item.location} className="w-full border rounded px-3 py-2" />
@@ -178,7 +178,7 @@ export default function EditItemClient({
         <div className="space-y-2">
           <label className="block text-sm mb-1">Existing Media</label>
           {ordered.length ? (
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {ordered.map((m, idx) => (
                 <div key={m.id} className="relative border rounded-md p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -211,7 +211,7 @@ export default function EditItemClient({
               ))}
             </div>
           ) : primaryPhotoUrl ? (
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               <div className="relative border rounded-md p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={primaryPhotoUrl} alt="photo" className="h-24 w-full object-cover rounded" />

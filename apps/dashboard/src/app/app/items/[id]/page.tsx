@@ -82,7 +82,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         })()}
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <div className="text-sm text-gray-500">SKU</div>
           <div className="text-base">{item.sku ?? "-"}</div>
@@ -104,7 +104,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         <div className="space-y-2">
           <div className="text-sm text-gray-500">Gallery</div>
           {media.length ? (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {media.map((m) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img key={m.id} className="h-32 w-full object-cover rounded border" src={m.url} alt="" />

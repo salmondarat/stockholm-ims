@@ -220,7 +220,7 @@ export default function OptionsBuilder({
           </div>
 
           {rows.map((row) => (
-            <div key={row.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
+            <div key={row.id} className="grid grid-cols-1 sm:grid-cols-[1fr_2fr_auto] gap-2 items-start">
               <input
                 className="border rounded px-3 py-2"
                 placeholder="Attribute (e.g. Size or Color)*"
