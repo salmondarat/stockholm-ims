@@ -43,8 +43,8 @@ export default function VariantDetailsToggle({
     : listVariantQuantities(options);
   if (!list.length) return null;
   return (
-    // When not inline, render details as an overlay popover so row height stays fixed
-    <div ref={rootRef} className={inline ? "inline-block ml-2" : "relative mt-1"}>
+    // When not inline, render details as an overlay popover; in table (inline=true) ensure full-width block so width is consistent
+    <div ref={rootRef} className={inline ? "block ml-0" : "relative mt-1"}>
       <button
         type="button"
         className={inline ? "text-[11px] underline text-gray-600 align-baseline" : "text-[11px] underline text-gray-600"}
@@ -52,15 +52,15 @@ export default function VariantDetailsToggle({
       >
         {open ? "Hide variants" : "Show variants"}
       </button>
-      {/* Inline mode keeps old inline flow; non-inline uses absolute popover to avoid layout shift */}
+      {/* Inline mode renders a full-width panel so width is consistent across rows */}
       {inline ? (
         open && (
-          <div className="mt-1 space-y-1">
+          <div className="mt-1 w-full rounded-md border bg-gray-50 dark:bg-neutral-900/40 p-2 space-y-1 break-words">
             {list.map((v, i) => (
               <div key={i} className="text-[11px] text-gray-600 flex items-center justify-between">
                 <div className="flex flex-wrap gap-1">
                   {Object.entries(v.attrs).map(([k, val]) => (
-                    <span key={k + val} className="px-2 py-0.5 rounded-full border">{k}: {val}</span>
+                    <span key={k + val} className="px-2 py-0.5 rounded-full border break-words">{k}: {val}</span>
                   ))}
                 </div>
                 <div className="ml-2 flex items-center gap-3">
@@ -73,7 +73,7 @@ export default function VariantDetailsToggle({
         )
       ) : (
         <div
-          className={`absolute left-0 top-full z-20 mt-1 w-max max-w-[80vw] max-h-[40vh] overflow-auto rounded-md border bg-white dark:bg-neutral-900 p-2 shadow-sm ${
+          className={`absolute left-0 top-full z-20 mt-1 w-[560px] max-w-[90vw] max-h-[40vh] overflow-auto rounded-md border bg-white dark:bg-neutral-900 p-2 shadow-sm ${
             open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
         >

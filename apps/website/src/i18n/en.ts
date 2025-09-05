@@ -1,18 +1,18 @@
 const en = {
   home: {
-    heroTitle: "Inventory, done right.",
+    heroTitle: "Organize inventory, beautifully.",
     heroSubtitle:
-      "Stockholm IMS keeps your items, variants, media, and counts in sync — fast, accurate, and easy on any device.",
+      "Simple tracking for teams. Scan barcodes, manage variants, and keep counts in sync everywhere.",
     ctaTry: "Try free",
     ctaLogin: "Log in",
     ctaOpen: "Open App",
-    trusted: "Trusted by small teams and growing retailers",
-    scanTitle: "Scan barcodes. Update stock instantly.",
+    trusted: "Trusted by practical teams and growing businesses",
+    scanTitle: "Scan, label, and track — fast.",
     scanBody:
-      "Use your device camera to scan SKUs and adjust quantities. Keep teams aligned with variant‑level accuracy.",
-    mediaTitle: "All your media in one place.",
+      "Use your camera to scan SKUs and update quantities in seconds. Stay aligned with variant‑level accuracy.",
+    mediaTitle: "Your product media, organized.",
     mediaBody:
-      "Upload product photos, pick a cover, and export polished PDFs for your catalog in a click.",
+      "Upload photos, pick a cover, and export polished PDFs whenever you need.",
     exploreFeatures: "Explore features",
     seePricing: "See pricing",
     startInMinutes: "Start in minutes",

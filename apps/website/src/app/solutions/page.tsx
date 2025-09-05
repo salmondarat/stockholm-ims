@@ -17,9 +17,9 @@ export default function SolutionsPage() {
 
       <div className="grid md:grid-cols-3 gap-6">
         {[
-          { title: dict?.solutions?.retail ?? 'Retail', img: "https://images.unsplash.com/photo-1521335751419-603f61523713?q=80&w=1200&auto=format&fit=crop", desc: dict?.solutions?.retailDesc ?? 'In‑store stock and variants.' },
-          { title: dict?.solutions?.ecom ?? 'E‑commerce', img: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop", desc: dict?.solutions?.ecomDesc ?? 'Catalog management and SKUs.' },
-          { title: dict?.solutions?.it ?? 'IT Assets', img: "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1200&auto=format&fit=crop", desc: dict?.solutions?.itDesc ?? 'Devices, labels, and locations.' },
+          { title: dict?.solutions?.retail ?? 'Retail', img: "/mock-generic.svg", desc: dict?.solutions?.retailDesc ?? 'In‑store stock and variants.' },
+          { title: dict?.solutions?.ecom ?? 'E‑commerce', img: "/mock-media.svg", desc: dict?.solutions?.ecomDesc ?? 'Catalog management and SKUs.' },
+          { title: dict?.solutions?.it ?? 'IT Assets', img: "/mock-generic.svg", desc: dict?.solutions?.itDesc ?? 'Devices, labels, and locations.' },
         ].map((s) => (
           <div key={s.title} className="rounded-xl overflow-hidden border border-subtle bg-card">
             <div className="relative aspect-[4/3]">

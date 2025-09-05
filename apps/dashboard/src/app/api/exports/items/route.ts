@@ -22,7 +22,7 @@ export async function GET() {
     condition: string | null;
     photoUrl: string | null;
     tags: unknown;
-    price: unknown;
+    price: number | null;
     lowStockThreshold: number | null;
     category?: { name: string } | null;
     options?: unknown;
@@ -45,7 +45,7 @@ export async function GET() {
       condition: r.condition,
       photoUrl: r.photoUrl,
       tags: r.tags,
-      price: r.price,
+      price: (r as unknown as { price?: unknown }).price == null ? null : Number((r as unknown as { price?: unknown }).price as unknown),
       lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
       category: r.category as { name: string } | null,
       options: (r as unknown as { options: unknown }).options,
@@ -65,7 +65,7 @@ export async function GET() {
       condition: r.condition,
       photoUrl: r.photoUrl,
       tags: r.tags,
-      price: r.price,
+      price: (r as unknown as { price?: unknown }).price == null ? null : Number((r as unknown as { price?: unknown }).price as unknown),
       lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
       category: r.category as { name: string } | null,
       options: (r as unknown as { options: unknown }).options,

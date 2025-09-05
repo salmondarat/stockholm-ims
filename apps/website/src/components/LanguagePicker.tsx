@@ -24,7 +24,7 @@ export default function LanguagePicker() {
     setLang(next);
     try {
       const raw = localStorage.getItem(KEY);
-      const prev = raw ? (JSON.parse(raw) as State) : { lang: "en", currency: "USD" };
+      const prev: State = raw ? (JSON.parse(raw) as State) : { lang: "en", currency: "USD" };
       const merged: State = { ...prev, lang: next };
       localStorage.setItem(KEY, JSON.stringify(merged));
       window.dispatchEvent(new CustomEvent("prefs:locale-currency", { detail: merged }));

@@ -1,6 +1,6 @@
 export function summarizeOptions(options: unknown, maxLen = 80): string {
   try {
-    const obj = options && typeof options === "object" ? options : null;
+    const obj = options && typeof options === "object" ? (options as Record<string, unknown>) : null;
     if (!obj) return "";
     const entries = Object.entries(obj).filter(
       ([k, v]) => !String(k).startsWith("_") && Array.isArray(v) && (v as unknown[]).length
@@ -26,9 +26,10 @@ export function getVariantQuantitySum(options: unknown): number {
 export function listVariantQuantities(options: unknown): Array<{ attrs: Record<string, string>; qty: number; sku?: string }>
 {
   try {
-    const obj = options && typeof options === "object" ? options : null;
+    const obj = options && typeof options === "object" ? (options as Record<string, unknown>) : null;
     if (!obj) return [];
-    const arr = (obj._variants || obj.__variants || []) as Array<{
+    const raw = obj as { _variants?: unknown; __variants?: unknown };
+    const arr = ((raw._variants as unknown) || (raw.__variants as unknown) || []) as Array<{
       attrs?: Record<string, string>;
       qty?: number;
       sku?: string;

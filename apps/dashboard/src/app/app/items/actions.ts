@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import { db } from "@stockholm/db";
 import { z } from "zod";
 import { mkdir, writeFile, unlink, stat } from "node:fs/promises";
@@ -277,7 +278,9 @@ export async function createItemAction(
       for (const key of keys) mediaUrls.push(publicS3UrlForKey(key));
     } else {
       // local or server-side S3 upload
-      const files = (form.getAll("images") as unknown as File[]).filter(Boolean);
+      const files = form
+        .getAll("images")
+        .filter((v): v is File => typeof v === "object" && v !== null && "arrayBuffer" in (v as any));
       const urls = await savePhotos(files, storage);
       mediaUrls.push(...urls);
     }
@@ -356,12 +359,14 @@ export async function createItemAction(
         tags: tagsArray ?? undefined,
         price: parsed.price ?? null,
         categoryId,
-        options: optionsEnabled
-          ? ({
-              ...(optionsObj || {}),
-              ...(variantsProvided ? deriveOptionsFromVariants(variantsArr) : {}),
-            } as Record<string, unknown>)
-          : {},
+        options: ((): Prisma.JsonObject => {
+          if (!optionsEnabled) return {};
+          const obj: Record<string, unknown> = {
+            ...(optionsObj || {}),
+            ...(variantsProvided ? deriveOptionsFromVariants(variantsArr) : {}),
+          };
+          return obj as Prisma.JsonObject;
+        })(),
         // keep first media as legacy photoUrl for list view
         photoUrl: mediaUrls[0] ?? null,
       },
@@ -453,7 +458,9 @@ export async function updateItemAction(
       const keys = form.getAll("mediaKey").map((x) => String(x)).filter(Boolean);
       for (const key of keys) mediaUrls.push(publicS3UrlForKey(key));
     } else {
-      const files = (form.getAll("images") as unknown as File[]).filter(Boolean);
+      const files = form
+        .getAll("images")
+        .filter((v): v is File => typeof v === "object" && v !== null && "arrayBuffer" in (v as any));
       const urls = await savePhotos(files, storage);
       mediaUrls.push(...urls);
     }
@@ -588,7 +595,7 @@ export async function updateItemAction(
           tags: tagsArray ?? undefined,
           price: parsed.price ?? null,
           categoryId: resolvedCategoryId,
-          options: baseOptions,
+          options: baseOptions as Prisma.JsonObject,
         },
       });
 

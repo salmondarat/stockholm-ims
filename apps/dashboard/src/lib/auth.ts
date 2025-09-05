@@ -1,6 +1,7 @@
 // apps/dashboard/src/lib/auth.ts
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 
@@ -11,11 +12,9 @@ const CredentialsSchema = z.object({
   password: z.string().min(1),
 });
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
-
-  providers: [
-    Credentials({
+// Build providers list conditionally to avoid requiring OAuth env in dev
+const providers: any[] = [
+  Credentials({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -51,7 +50,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
-  ],
+];
+
+const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID);
+if (hasGoogle) providers.push(Google);
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  session: { strategy: "jwt" },
+  providers,
 
   callbacks: {
     async jwt({ token, user }) {

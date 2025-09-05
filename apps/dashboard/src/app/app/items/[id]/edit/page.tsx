@@ -26,23 +26,25 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   });
   if (!item) return <div className="p-6">Item not found.</div>;
 
-  const dbAny = db as unknown as {
-    itemVariant?: {
-      findMany: (args: unknown) => Promise<Array<{ itemId: string; attrs: Record<string, string>; qty: number; sku: string | null }>>;
-    };
-  };
   let variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
-  if (dbAny.itemVariant && typeof dbAny.itemVariant.findMany === "function") {
-    try {
-      const vrows = await dbAny.itemVariant.findMany({
-        where: { itemId: id },
-        select: { itemId: true, attrs: true, qty: true, sku: true },
-      } as unknown);
-      variants = vrows.map((v) => ({ attrs: v.attrs, qty: v.qty, sku: v.sku ?? undefined }));
-    } catch {
-      variants = listVariantQuantities(item.options);
-    }
-  } else {
+  try {
+    const vrows = await db.itemVariant.findMany({
+      where: { itemId: id },
+      select: { itemId: true, attrs: true, qty: true, sku: true },
+    });
+    variants = vrows.map((v) => {
+      const attrs = (() => {
+        const a = v.attrs as unknown;
+        if (a && typeof a === "object" && !Array.isArray(a)) {
+          const out: Record<string, string> = {};
+          for (const [k, val] of Object.entries(a as Record<string, unknown>)) out[String(k)] = String(val);
+          return out;
+        }
+        return {} as Record<string, string>;
+      })();
+      return { attrs, qty: v.qty, sku: v.sku ?? undefined };
+    });
+  } catch {
     variants = listVariantQuantities(item.options);
   }
 

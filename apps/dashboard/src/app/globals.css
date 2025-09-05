@@ -120,7 +120,8 @@
   }
   /* Reserve vertical scrollbar space to prevent layout shift when content height changes */
   html {
-    scrollbar-gutter: stable;
+    /* Prevent layout shift when page vertical scrollbar appears/disappears */
+    scrollbar-gutter: stable both-edges;
   }
   body {
     @apply bg-background text-foreground;

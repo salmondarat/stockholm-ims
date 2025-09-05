@@ -7,9 +7,10 @@
   --muted: #475569;      /* slate-600 */
   --card: #ffffff;
   --border-color: #e5e7eb;
-  --primary: #2563eb;    /* blue-600 */
+  --primary: #4f46e5;    /* indigo-600 */
   --primary-foreground: #ffffff;
-  --brand: #ef4444;      /* red-500 for CTA */
+  --brand: #06b6d4;      /* cyan-500 for CTA */
+  --brand-foreground: #05252a;
 }
 
 /* Dark theme */
@@ -19,16 +20,18 @@
   --muted: #a8b3cf;      /* secondary text */
   --card: #0f1a33;       /* card background */
   --border-color: #ffffff1a; /* white/10 */
-  --primary: #2563eb;
+  --primary: #6366f1; /* indigo-500 */
   --primary-foreground: #eaf2ff;
-  --brand: #ef4444;
+  --brand: #22d3ee;  /* cyan-400 */
+  --brand-foreground: #021a1d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Provide fallbacks if CSS variables from next/font are not set */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 /* Single dark theme for the marketing site */
@@ -39,6 +42,9 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Shared layout container to keep header/logo aligned with page content */
+.site-container { max-width: 72rem; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; }
+
 /* Utilities used in the site */
 .text-muted { color: var(--muted); }
 .bg-card { background-color: var(--card); }
@@ -48,7 +54,32 @@ body {
 .btn-outline { background: transparent; color: var(--foreground); }
 .btn:hover { filter: brightness(1.05); }
 .btn-pill { border-radius: 9999px; padding:.55rem 1rem; }
-.btn-cta { background: var(--brand); color: white; border-color: transparent; }
+.btn-cta { background: var(--brand); color: var(--brand-foreground); border-color: transparent; }
+.btn-cta:hover { background: var(--primary); color: var(--primary-foreground); }
+
+/* Badges */
+.badge { display:inline-flex; align-items:center; gap:.35rem; font-size:.7rem; padding:.25rem .5rem; border-radius:9999px; border:1px solid var(--border-color); }
+.badge-success { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+.badge-primary { background:#eef2ff; color:#3730a3; border-color:#c7d2fe; }
+.badge-brand { background:#ecfeff; color:#155e75; border-color:#a5f3fc; }
+
+/* Accent chip for small hero labels */
+.chip { display:inline-flex; align-items:center; gap:.4rem; font-size:.75rem; padding:.3rem .55rem; border-radius:9999px; border:1px solid var(--border-color); background:#ffffffcc; backdrop-filter: blur(6px); }
+[data-theme="dark"] .chip { background:#0b1220cc; }
+
+/* Hero background: soft radial/linear gradient in both themes */
+.hero {
+  background:
+    radial-gradient(1200px 400px at 10% -20%, rgba(79,70,229,0.08), transparent 60%),
+    radial-gradient(800px 300px at 90% -10%, rgba(6,182,212,0.08), transparent 60%),
+    linear-gradient(to bottom, #ffffff, #fbfdff);
+}
+[data-theme="dark"] .hero {
+  background:
+    radial-gradient(1200px 400px at 10% -20%, rgba(99,102,241,0.22), transparent 60%),
+    radial-gradient(800px 300px at 90% -10%, rgba(34,211,238,0.20), transparent 60%),
+    linear-gradient(to bottom, var(--background), #0b1b34);
+}
 
 /* Motion: soft transitions and page fade */
 a, button, .btn, nav a, [role="menuitem"] { transition: color .15s ease, background-color .15s ease, border-color .15s ease, transform .12s ease; }
@@ -56,3 +87,9 @@ button:active, .btn:active { transform: translateY(0.5px) scale(0.99); }
 
 @keyframes fade-in-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 .page-transition { animation: fade-in-up .25s ease both; }
+
+/* Icon frame utilities for navbar/menus */
+.icon-frame { width:34px; height:34px; aspect-ratio:1/1; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; border:2px solid var(--border-color); border-radius:10px; background:#fff; color: var(--primary); transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .15s ease; }
+.icon-frame > .icon { width:20px; height:20px; transition: transform .15s ease; }
+.group:hover .icon-frame { background: var(--primary); color: var(--primary-foreground); border-color: transparent; transform: translateY(-1px); }
+.group:hover .icon-frame > .icon { transform: scale(1.1); }
