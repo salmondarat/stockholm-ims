@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Boxes, Barcode, Camera, Cloud, FileText, Shield } from "lucide-react";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import PricingStrip from "@/components/PricingStrip";
-import SafeImage from "@/components/SafeImage";
 import useI18n from "@/hooks/useI18n";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

@@ -42,9 +42,9 @@ export default function CurrencyDetector() {
       // Fallback to navigator-language heuristic
       try {
         const raw = localStorage.getItem(KEY);
-        const current = raw ? JSON.parse(raw) as { lang?: string; currency?: string } : null;
+        const current = raw ? (JSON.parse(raw) as { lang?: string; currency?: "USD" | "IDR" | "EUR" }) : null;
         const detected = detectCurrency();
-        const merged = { lang: (current?.lang as any) || "en", currency: current?.currency || detected };
+        const merged = { lang: current?.lang ?? "en", currency: current?.currency || detected };
         localStorage.setItem(KEY, JSON.stringify(merged));
         window.dispatchEvent(new CustomEvent("prefs:locale-currency", { detail: merged }));
       } catch {}

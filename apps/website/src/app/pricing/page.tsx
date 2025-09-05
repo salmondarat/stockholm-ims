@@ -20,9 +20,12 @@ export default function PricingPage() {
       const raw = localStorage.getItem("site-locale-currency");
       if (raw) setCurrency((JSON.parse(raw) as { currency: typeof currency }).currency);
     } catch {}
-    const handler = (e: any) => setCurrency(e.detail.currency);
-    window.addEventListener("prefs:locale-currency", handler);
-    return () => window.removeEventListener("prefs:locale-currency", handler);
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ currency?: "USD" | "IDR" | "EUR" }>).detail;
+      if (detail && detail.currency) setCurrency(detail.currency);
+    };
+    window.addEventListener("prefs:locale-currency", handler as EventListener);
+    return () => window.removeEventListener("prefs:locale-currency", handler as EventListener);
   }, []);
   // Sync billing with querystring
   useEffect(() => {

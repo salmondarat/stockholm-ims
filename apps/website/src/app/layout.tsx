@@ -21,7 +21,6 @@ import CurrencyDetector from "../components/CurrencyDetector";
 import PageTransition from "../components/PageTransition";
 
 function SiteHeader() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b relative">
       <div className="site-container py-3 flex items-center justify-between gap-4 text-gray-900">

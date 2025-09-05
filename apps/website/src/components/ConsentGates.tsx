@@ -4,7 +4,22 @@ import { useEffect } from "react";
 
 const STORAGE_KEY = "cookie-consent:v1";
 
-function readPref<T = any>(): T | null {
+type ConsentPrefs = { analytics?: boolean; marketing?: boolean };
+
+declare global {
+  interface Window {
+    dataLayer: unknown[];
+    gtag?: (...args: unknown[]) => void;
+    fbq?: FbqFn;
+  }
+}
+
+type FbqFn = ((...args: unknown[]) => void) & {
+  callMethod?: (...args: unknown[]) => void;
+  queue?: unknown[];
+};
+
+function readPref<T = unknown>(): T | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as T) : null;
@@ -29,17 +44,17 @@ function loadScript(src: string, attrs: Record<string, string> = {}): Promise<vo
 export default function ConsentGates() {
   useEffect(() => {
     const apply = async () => {
-      const prefs = readPref<{ analytics?: boolean; marketing?: boolean }>() || {};
+      const prefs = readPref<ConsentPrefs>() || {};
       const gaId = process.env.NEXT_PUBLIC_GA_ID;
       const fbId = process.env.NEXT_PUBLIC_FB_PIXEL_ID;
 
       if (prefs.analytics && gaId) {
         try {
           await loadScript(`https://www.googletagmanager.com/gtag/js?id=${gaId}`);
-          // GA init
-          (window as any).dataLayer = (window as any).dataLayer || [];
-          function gtag(...args: any[]) { (window as any).dataLayer.push(args); }
-          (window as any).gtag = gtag;
+          // GA init (typed)
+          window.dataLayer = window.dataLayer || [];
+          const gtag = (...args: unknown[]) => { window.dataLayer.push(args); };
+          window.gtag = gtag;
           gtag('js', new Date());
           gtag('config', gaId);
         } catch {}
@@ -48,10 +63,20 @@ export default function ConsentGates() {
       if (prefs.marketing && fbId) {
         try {
           await loadScript('https://connect.facebook.net/en_US/fbevents.js');
-          (window as any).fbq = (window as any).fbq || function(){ (window as any).fbq.callMethod ? (window as any).fbq.callMethod.apply((window as any).fbq, arguments) : (window as any).fbq.queue.push(arguments) };
-          if (!(window as any).fbq.queue) (window as any).fbq.queue = [];
-          (window as any).fbq('init', fbId);
-          (window as any).fbq('track', 'PageView');
+          if (!window.fbq) {
+            const fbq: FbqFn = (...args: unknown[]) => {
+              if (typeof fbq.callMethod === 'function') {
+                fbq.callMethod(...args);
+              } else {
+                fbq.queue = fbq.queue ?? [];
+                fbq.queue.push(args);
+              }
+            };
+            window.fbq = fbq;
+          }
+          if (!window.fbq.queue) window.fbq.queue = [];
+          window.fbq('init', fbId);
+          window.fbq('track', 'PageView');
         } catch {}
       }
     };
@@ -68,4 +93,3 @@ export default function ConsentGates() {
 
   return null;
 }
-

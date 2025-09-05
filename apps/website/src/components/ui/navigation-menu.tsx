@@ -2,33 +2,12 @@
 
 import Link from "next/link";
 import * as Nav from "@radix-ui/react-navigation-menu";
-import {
-  Smartphone,
-  Barcode,
-  QrCode,
-  Plug,
-  Bell,
-  BarChart3,
-  ChevronDown,
-  Store,
-  ShoppingCart,
-  Laptop,
-  Factory,
-  Users,
-  LayoutDashboard,
-  Boxes,
-  Package,
-  Wrench,
-  Activity,
-  GraduationCap,
-  Building2,
-} from "lucide-react";
+import { Smartphone, Barcode, QrCode, Plug, Bell, BarChart3, ChevronDown, Factory, LayoutDashboard, Boxes, Package, Wrench, Activity, GraduationCap } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import useI18n from "@/hooks/useI18n";
 
 export default function NavigationMenu() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const { dict } = useI18n();
   const [showIndustriesMore, setShowIndustriesMore] = useState(false);
   return (
@@ -162,14 +141,7 @@ export default function NavigationMenu() {
   );
 }
 
-function NavLink({ href, title, desc }: { href: string; title: string; desc: string }) {
-  return (
-    <Link href={href} className="block rounded-md p-3 hover:bg-gray-50">
-      <div className="font-medium">{title}</div>
-      <div className="text-xs text-gray-600">{desc}</div>
-    </Link>
-  );
-}
+// (Removed unused NavLink to keep lint clean)
 
 function MegaItem({ icon, title, desc, href }: { icon: ReactNode; title: string; desc: string; href: string }) {
   return (

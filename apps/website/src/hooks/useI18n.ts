@@ -24,14 +24,13 @@ export default function useI18n() {
   }, [lang]);
 
   useEffect(() => {
-    const onPrefs = (e: any) => {
-      const l = (e?.detail?.lang as Lang) || undefined;
+    const onPrefs = (e: Event) => {
+      const l = (e as CustomEvent<{ lang?: Lang }>).detail?.lang;
       if (l && l !== lang) setLang(l);
     };
-    window.addEventListener("prefs:locale-currency", onPrefs);
-    return () => window.removeEventListener("prefs:locale-currency", onPrefs);
+    window.addEventListener("prefs:locale-currency", onPrefs as EventListener);
+    return () => window.removeEventListener("prefs:locale-currency", onPrefs as EventListener);
   }, [lang]);
 
   return { lang, dict } as const;
 }
-
