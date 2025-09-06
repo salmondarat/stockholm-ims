@@ -53,10 +53,14 @@ const providers: Provider[] = [
   }),
 ];
 
-const googleClientId = process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+const googleClientId =
+  process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret =
+  process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET;
 if (googleClientId && googleClientSecret) {
-  providers.push(Google({ clientId: googleClientId, clientSecret: googleClientSecret }));
+  providers.push(
+    Google({ clientId: googleClientId, clientSecret: googleClientSecret }),
+  );
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
