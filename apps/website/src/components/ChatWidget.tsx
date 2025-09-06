@@ -47,7 +47,8 @@ export default function ChatWidget() {
     setMsgs((m) => [...m, { role: "user", content: text }]);
     setLoading(true);
     try {
-      const endpoint = process.env.NEXT_PUBLIC_CHAT_WEBHOOK || "/api/ai/demo";
+      const endpoint =
+        process.env.NEXT_PUBLIC_CHAT_WEBHOOK || "/api/ai/openrouter";
       if (endpoint) {
         const res = await fetch(endpoint, {
           method: "POST",

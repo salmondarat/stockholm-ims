@@ -68,8 +68,13 @@ export default function Home() {
             <p className="mt-2 text-muted">
               Track inventory on the go with our responsive dashboard.
             </p>
-            <div className="mt-5 flex flex-wrap gap-3 items-center">
-              <Link href="#" aria-label="Download on the App Store">
+            <div className="mt-5 flex flex-wrap gap-4 items-center">
+              <Link
+                href="#"
+                aria-label="Download on the App Store"
+                className="inline-flex items-center gap-3"
+              >
+                <i className="fa-brands fa-apple text-2xl opacity-80" />
                 <Image
                   src="/badges/app-store.svg"
                   alt="App Store badge"
@@ -77,7 +82,12 @@ export default function Home() {
                   height={40}
                 />
               </Link>
-              <Link href="#" aria-label="Get it on Google Play">
+              <Link
+                href="#"
+                aria-label="Get it on Google Play"
+                className="inline-flex items-center gap-3"
+              >
+                <i className="fa-brands fa-google-play text-2xl opacity-80" />
                 <Image
                   src="/badges/google-play.svg"
                   alt="Google Play badge"

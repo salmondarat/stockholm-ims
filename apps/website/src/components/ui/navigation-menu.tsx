@@ -272,12 +272,16 @@ function SolutionItem({
   return (
     <Link
       href={href}
-      className="group flex gap-3 rounded-md p-3 hover:bg-gray-50 transition-colors"
+      className="group grid grid-cols-[28px_minmax(0,1fr)] items-start gap-3 rounded-md p-3 hover:bg-gray-50 transition-colors w-full"
     >
-      <span className="mt-0.5 icon-frame">{icon}</span>
-      <div>
-        <div className="font-medium">{title}</div>
-        <div className="text-xs text-gray-600">{desc}</div>
+      <span className="mt-0.5 h-6 w-6 inline-grid place-items-center text-gray-700">
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <div className="font-medium leading-5 truncate">{title}</div>
+        <div className="text-xs text-gray-600 leading-4 line-clamp-2">
+          {desc}
+        </div>
       </div>
     </Link>
   );

@@ -160,6 +160,15 @@ export default async function RootLayout({
   const lang = (store.get("lang")?.value as "en" | "id" | undefined) || "en";
   return (
     <html lang={lang} data-theme={theme}>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+          integrity="sha512-CT1d2M6qkN1W7wqg0F6Ewz0qVq8Q0t9J3T9CzKfR6xH7wqjW1q9HqZ8WmE2YfB8z2o5KQ4y0y3f2l8b8+Z3f5w=="
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+        />
+      </head>
       <body className={`antialiased bg-[--background] text-[--foreground]`}>
         <SiteHeader />
         <PageTransition>{children}</PageTransition>
