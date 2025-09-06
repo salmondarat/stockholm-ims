@@ -13,7 +13,7 @@ const CredentialsSchema = z.object({
 });
 
 // Build providers list conditionally to avoid requiring OAuth env in dev
-const providers: any[] = [
+const providers = [
   Credentials({
       name: "Credentials",
       credentials: {

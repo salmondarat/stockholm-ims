@@ -81,7 +81,7 @@ export default function SignupPage() {
               </button>
 
               <p className="text-[11px] text-gray-500">
-                By clicking on "Create account" you agree to Stockholm's <a className="underline" href="#">Terms & Conditions</a> and <a className="underline" href="#">Privacy Policy</a>.
+                By clicking on &quot;Create account&quot; you agree to Stockholm&apos;s <a className="underline" href="#">Terms & Conditions</a> and <a className="underline" href="#">Privacy Policy</a>.
               </p>
               <p className="text-xs text-gray-600">
                 Already have an account? <a className="text-sky-600 hover:underline" href="/login">Log in</a>

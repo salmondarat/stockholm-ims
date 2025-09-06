@@ -280,7 +280,7 @@ export async function createItemAction(
       // local or server-side S3 upload
       const files = form
         .getAll("images")
-        .filter((v): v is File => typeof v === "object" && v !== null && "arrayBuffer" in (v as any));
+        .filter((v): v is File => v instanceof File);
       const urls = await savePhotos(files, storage);
       mediaUrls.push(...urls);
     }
@@ -460,7 +460,7 @@ export async function updateItemAction(
     } else {
       const files = form
         .getAll("images")
-        .filter((v): v is File => typeof v === "object" && v !== null && "arrayBuffer" in (v as any));
+        .filter((v): v is File => v instanceof File);
       const urls = await savePhotos(files, storage);
       mediaUrls.push(...urls);
     }
