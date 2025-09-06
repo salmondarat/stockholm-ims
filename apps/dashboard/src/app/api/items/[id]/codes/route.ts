@@ -34,7 +34,7 @@ async function generateQrPng(text: string, size = 256) {
 
 export async function GET(
   _req: NextRequest,
-  ctx: { params: Promise<{ id: string }> }
+  ctx: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
   if (!session?.user?.email) {
@@ -73,6 +73,6 @@ export async function GET(
     },
     {
       headers: { "Cache-Control": "no-store" },
-    }
+    },
   );
 }

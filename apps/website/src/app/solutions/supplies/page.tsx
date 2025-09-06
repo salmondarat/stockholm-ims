@@ -7,7 +7,11 @@ export default function Page() {
         title: "Supplies Tracking",
         desc: "Track consumables and materials across teams, with clear reorder signals.",
         image: "/mock-media.svg",
-        bullets: ["Per‑location counts", "Simple PDF exports", "History you can trust"],
+        bullets: [
+          "Per‑location counts",
+          "Simple PDF exports",
+          "History you can trust",
+        ],
       }}
     />
   );

@@ -83,4 +83,3 @@ export default function CodesActions({ id }: Props) {
     </div>
   );
 }
-

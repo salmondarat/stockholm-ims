@@ -17,20 +17,34 @@ export default function FeaturesPage() {
 
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold">{dict.features.variantTitle}</h2>
+          <h2 className="text-xl font-semibold">
+            {dict.features.variantTitle}
+          </h2>
           <p className="text-muted">{dict.features.variantBody}</p>
         </div>
         <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-subtle">
-          <Image src="/mock-generic.svg" alt="Variants" fill className="object-cover" />
+          <Image
+            src="/mock-generic.svg"
+            alt="Variants"
+            fill
+            className="object-cover"
+          />
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-subtle">
-          <Image src="/mock-scan.svg" alt="Barcode" fill className="object-cover" />
+          <Image
+            src="/mock-scan.svg"
+            alt="Barcode"
+            fill
+            className="object-cover"
+          />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold">{dict.features.barcodeTitle}</h2>
+          <h2 className="text-xl font-semibold">
+            {dict.features.barcodeTitle}
+          </h2>
           <p className="text-muted">{dict.features.barcodeBody}</p>
         </div>
       </div>
@@ -41,14 +55,23 @@ export default function FeaturesPage() {
           <p className="text-muted">{dict.features.mediaBody}</p>
         </div>
         <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-subtle">
-          <Image src="/mock-media.svg" alt="Media" fill className="object-cover" />
+          <Image
+            src="/mock-media.svg"
+            alt="Media"
+            fill
+            className="object-cover"
+          />
         </div>
       </div>
 
       <div className="text-center">
         <div className="inline-flex gap-3">
-          <Link href={`${appUrl}/signup`} className="btn btn-primary">{dict.features.ctaCreate}</Link>
-          <Link href={`${appUrl}/login`} className="btn btn-outline">{dict.features.ctaLogin}</Link>
+          <Link href={`${appUrl}/signup`} className="btn btn-primary">
+            {dict.features.ctaCreate}
+          </Link>
+          <Link href={`${appUrl}/login`} className="btn btn-outline">
+            {dict.features.ctaLogin}
+          </Link>
         </div>
       </div>
     </main>

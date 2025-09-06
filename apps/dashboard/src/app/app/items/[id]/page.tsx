@@ -3,11 +3,19 @@ import { db } from "@stockholm/db";
 import CodesActions from "./CodesActions";
 import { listVariantQuantities } from "@/lib/options";
 
-export default async function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ItemDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const base = await db.item.findUnique({ where: { id } });
   if (!base) return <div className="p-6">Item not found.</div>;
-  let variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
+  let variants: Array<{
+    attrs: Record<string, string>;
+    qty: number;
+    sku?: string;
+  }> = [];
   try {
     const vrows = await db.itemVariant.findMany({
       where: { itemId: id },
@@ -18,7 +26,8 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         const a = v.attrs as unknown;
         if (a && typeof a === "object" && !Array.isArray(a)) {
           const out: Record<string, string> = {};
-          for (const [k, val] of Object.entries(a as Record<string, unknown>)) out[String(k)] = String(val);
+          for (const [k, val] of Object.entries(a as Record<string, unknown>))
+            out[String(k)] = String(val);
           return out;
         }
         return {} as Record<string, string>;
@@ -28,7 +37,9 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
   } catch {
     variants = listVariantQuantities(base.options);
   }
-  const item = { ...base, variants } as typeof base & { variants: typeof variants };
+  const item = { ...base, variants } as typeof base & {
+    variants: typeof variants;
+  };
 
   const media = (await db.itemMedia.findMany({
     where: { itemId: id },
@@ -59,21 +70,33 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         <div className="text-sm font-medium mb-2">Variants</div>
         {renderOptions(item.options)}
         {(() => {
-          const variants = item.variants as Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
+          const variants = item.variants as Array<{
+            attrs: Record<string, string>;
+            qty: number;
+            sku?: string;
+          }>;
           if (!variants || !variants.length) return null;
           return (
             <div className="mt-3 space-y-1">
               <div className="text-xs text-gray-500">Quantities by variant</div>
               <div className="space-y-1">
                 {variants.map((v, i) => (
-                  <div key={i} className="text-sm flex items-center justify-between">
+                  <div
+                    key={i}
+                    className="text-sm flex items-center justify-between"
+                  >
                     <div className="flex flex-wrap gap-1">
                       {Object.entries(v.attrs).map(([k, val]) => (
-                        <span key={k + val} className="px-2 py-0.5 rounded-full border text-xs">{k}: {val}</span>
+                        <span
+                          key={k + val}
+                          className="px-2 py-0.5 rounded-full border text-xs"
+                        >
+                          {k}: {val}
+                        </span>
                       ))}
                     </div>
                     <div className="text-xs text-gray-600 flex items-center gap-3">
-                      <span>sku: {v.sku ?? '-'}</span>
+                      <span>sku: {v.sku ?? "-"}</span>
                       <span>qty: {v.qty}</span>
                     </div>
                   </div>
@@ -89,11 +112,16 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
           <div className="text-sm text-gray-500">SKU</div>
           <div className="text-base">{item.sku ?? "-"}</div>
           <div className="text-sm text-gray-500 mt-4">Quantity</div>
-          <div className="text-base">{(() => {
-            const sum = item.variants.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0);
-            const hasVariants = item.variants.length > 0;
-            return hasVariants ? sum : item.quantity;
-          })()}</div>
+          <div className="text-base">
+            {(() => {
+              const sum = item.variants.reduce(
+                (acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0),
+                0,
+              );
+              const hasVariants = item.variants.length > 0;
+              return hasVariants ? sum : item.quantity;
+            })()}
+          </div>
           <div className="text-sm text-gray-500 mt-4">Low-stock threshold</div>
           <div className="text-base">{item.lowStockThreshold ?? 0}</div>
           <div className="text-sm text-gray-500 mt-4">Location</div>
@@ -101,7 +129,11 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
           <div className="text-sm text-gray-500 mt-4">Condition</div>
           <div className="text-base">{item.condition ?? "-"}</div>
           <div className="text-sm text-gray-500 mt-4">Tags</div>
-          <div className="text-base">{Array.isArray(item.tags) ? (item.tags as string[]).join(", ") : "-"}</div>
+          <div className="text-base">
+            {Array.isArray(item.tags)
+              ? (item.tags as string[]).join(", ")
+              : "-"}
+          </div>
         </div>
         <div className="space-y-2">
           <div className="text-sm text-gray-500">Gallery</div>
@@ -109,7 +141,12 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {media.map((m) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={m.id} className="h-32 w-full object-cover rounded border" src={m.url} alt="" />
+                <img
+                  key={m.id}
+                  className="h-32 w-full object-cover rounded border"
+                  src={m.url}
+                  alt=""
+                />
               ))}
             </div>
           ) : (
@@ -123,10 +160,16 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
 
 function renderOptions(options: unknown) {
   try {
-    const obj: Record<string, unknown> | null = options && typeof options === "object" ? (options as Record<string, unknown>) : null;
+    const obj: Record<string, unknown> | null =
+      options && typeof options === "object"
+        ? (options as Record<string, unknown>)
+        : null;
     if (!obj) return <div className="text-sm text-gray-500">-</div>;
     const entries = Object.entries(obj).filter(
-      ([k, v]) => !String(k).startsWith("_") && Array.isArray(v) && (v as unknown[]).length
+      ([k, v]) =>
+        !String(k).startsWith("_") &&
+        Array.isArray(v) &&
+        (v as unknown[]).length,
     ) as Array<[string, string[]]>;
     if (!entries.length) return <div className="text-sm text-gray-500">-</div>;
     return (
@@ -136,7 +179,10 @@ function renderOptions(options: unknown) {
             <span className="font-medium">{k}:</span>
             <span className="ml-2 inline-flex flex-wrap gap-1 align-middle">
               {vals.map((v) => (
-                <span key={k + v} className="px-2 py-0.5 rounded-full border text-xs">
+                <span
+                  key={k + v}
+                  className="px-2 py-0.5 rounded-full border text-xs"
+                >
                   {v}
                 </span>
               ))}

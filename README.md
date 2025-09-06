@@ -47,13 +47,13 @@ Prerequisites:
 - Node.js >= 18 and pnpm >= 9
 - Docker (for local PostgreSQL) or an accessible Postgres instance
 
-1) Clone and install dependencies
+1. Clone and install dependencies
 
 ```bash
 pnpm install
 ```
 
-2) Start PostgreSQL (dev)
+2. Start PostgreSQL (dev)
 
 ```bash
 docker compose -f infra/docker-compose.dev.yml up -d
@@ -64,7 +64,7 @@ bash infra/install-docker-up.sh   # install once
 docker up -d                      # uses infra/docker-compose.dev.yml
 ```
 
-3) Configure environment
+3. Configure environment
 
 Create a `.env` in repo root (example):
 
@@ -76,14 +76,14 @@ NEXTAUTH_URL=http://localhost:3000
 LOW_STOCK_CRON_TOKEN=<set-a-random-token>
 ```
 
-4) Generate Prisma client and run migrations
+4. Generate Prisma client and run migrations
 
 ```bash
 pnpm prisma:generate
 pnpm prisma:migrate:dev
 ```
 
-5) Seed an admin user (optional but recommended)
+5. Seed an admin user (optional but recommended)
 
 ```bash
 # Defaults: email=admin@stockholm.local password=admin123 role=ADMIN
@@ -93,7 +93,7 @@ pnpm -F dashboard run seed
 pnpm -F dashboard run seed --email=you@example.com --password=strongpass --role=ADMIN
 ```
 
-6) Run the apps in development
+6. Run the apps in development
 
 ```bash
 pnpm dev

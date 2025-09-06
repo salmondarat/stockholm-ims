@@ -17,8 +17,12 @@ export default function LocaleCurrencyPicker() {
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
-    window.dispatchEvent(new CustomEvent("prefs:locale-currency", { detail: state }));
+    try {
+      localStorage.setItem(KEY, JSON.stringify(state));
+    } catch {}
+    window.dispatchEvent(
+      new CustomEvent("prefs:locale-currency", { detail: state }),
+    );
   }, [state]);
 
   return (
@@ -26,7 +30,9 @@ export default function LocaleCurrencyPicker() {
       <select
         className="border rounded-md px-2 py-1 bg-transparent"
         value={state.lang}
-        onChange={(e) => setState((s) => ({ ...s, lang: e.target.value as State["lang"] }))}
+        onChange={(e) =>
+          setState((s) => ({ ...s, lang: e.target.value as State["lang"] }))
+        }
         aria-label="Language"
       >
         <option value="en">English</option>
@@ -35,7 +41,12 @@ export default function LocaleCurrencyPicker() {
       <select
         className="border rounded-md px-2 py-1 bg-transparent"
         value={state.currency}
-        onChange={(e) => setState((s) => ({ ...s, currency: e.target.value as State["currency"] }))}
+        onChange={(e) =>
+          setState((s) => ({
+            ...s,
+            currency: e.target.value as State["currency"],
+          }))
+        }
         aria-label="Currency"
       >
         <option value="USD">USD</option>
@@ -47,7 +58,12 @@ export default function LocaleCurrencyPicker() {
 }
 
 export function formatMoney(amount: number, currency: State["currency"]) {
-  try { return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount); }
-  catch { return `$${amount.toFixed(2)}`; }
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+    }).format(amount);
+  } catch {
+    return `$${amount.toFixed(2)}`;
+  }
 }
-

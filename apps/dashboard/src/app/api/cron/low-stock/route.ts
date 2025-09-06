@@ -34,7 +34,8 @@ export async function GET(req: Request) {
   const rows = await db.item.findMany();
   const lows = rows.filter(
     (x) =>
-      (x.lowStockThreshold ?? 0) > 0 && x.quantity <= (x.lowStockThreshold ?? 0)
+      (x.lowStockThreshold ?? 0) > 0 &&
+      x.quantity <= (x.lowStockThreshold ?? 0),
   );
 
   // TODO: kirimkan notifikasi di sini kalau mau (email/telegram/slack)

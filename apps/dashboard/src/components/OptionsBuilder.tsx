@@ -20,7 +20,11 @@ export default function OptionsBuilder({
 }: {
   defaultValue?: string;
   baseSku?: string;
-  initialVariants?: Array<{ attrs?: Record<string, string>; qty?: number; sku?: string }>;
+  initialVariants?: Array<{
+    attrs?: Record<string, string>;
+    qty?: number;
+    sku?: string;
+  }>;
   onSummaryChange?: (info: { hasVariants: boolean; sumQty: number }) => void;
 }) {
   const [enabled, setEnabled] = useState(false);
@@ -52,11 +56,16 @@ export default function OptionsBuilder({
           (obj as { _variants?: unknown; __variants?: unknown })._variants ??
           (obj as { __variants?: unknown }).__variants;
         const variantsFromJson = Array.isArray(rawVariants)
-          ? (rawVariants as Array<{ attrs?: Record<string, string>; qty?: number; sku?: string }>)
+          ? (rawVariants as Array<{
+              attrs?: Record<string, string>;
+              qty?: number;
+              sku?: string;
+            }>)
           : [];
-        const seed = Array.isArray(initialVariants) && initialVariants.length
-          ? initialVariants
-          : variantsFromJson;
+        const seed =
+          Array.isArray(initialVariants) && initialVariants.length
+            ? initialVariants
+            : variantsFromJson;
         const map: Record<string, VariantData> = {};
         for (let i = 0; i < seed.length; i++) {
           const v = seed[i];
@@ -95,7 +104,13 @@ export default function OptionsBuilder({
   // Compute combinations
   const attributes = useMemo(() => {
     const list = rows
-      .map((r) => ({ key: r.name.trim(), values: r.valuesText.split(/[,\n]/g).map((s) => s.trim()).filter(Boolean) }))
+      .map((r) => ({
+        key: r.name.trim(),
+        values: r.valuesText
+          .split(/[,\n]/g)
+          .map((s) => s.trim())
+          .filter(Boolean),
+      }))
       .filter((r) => r.key && r.values.length);
     return list;
   }, [rows]);
@@ -124,7 +139,10 @@ export default function OptionsBuilder({
     const map = new Map<string, number>();
     combos.forEach((attrs, idx) => {
       const key = variantKey(attrs);
-      const ent = variantMap[key] || { qty: 0, sku: baseSku ? `${baseSku}-${idx + 1}` : "" };
+      const ent = variantMap[key] || {
+        qty: 0,
+        sku: baseSku ? `${baseSku}-${idx + 1}` : "",
+      };
       const sku = (ent.sku || "").trim();
       if (!sku) return;
       map.set(sku, (map.get(sku) || 0) + 1);
@@ -143,7 +161,10 @@ export default function OptionsBuilder({
       return { attrs, qty: ent.qty ?? 0, sku };
     });
     variantsRef.current.value = combos.length ? JSON.stringify(arr) : "";
-    const sum = arr.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? Number(v.qty) : 0), 0);
+    const sum = arr.reduce(
+      (acc, v) => acc + (Number.isFinite(v.qty) ? Number(v.qty) : 0),
+      0,
+    );
     onSummaryChange?.({ hasVariants: combos.length > 0, sumQty: sum });
   }, [variantMap, combos, baseSku, onSummaryChange]);
 
@@ -172,11 +193,17 @@ export default function OptionsBuilder({
 
   const setQty = (attrs: Record<string, string>, qty: number) => {
     const key = variantKey(attrs);
-    setVariantMap((prev) => ({ ...prev, [key]: { ...(prev[key] || {}), qty } }));
+    setVariantMap((prev) => ({
+      ...prev,
+      [key]: { ...(prev[key] || {}), qty },
+    }));
   };
   const setSku = (attrs: Record<string, string>, sku: string) => {
     const key = variantKey(attrs);
-    setVariantMap((prev) => ({ ...prev, [key]: { ...(prev[key] || { qty: 0 }), sku } }));
+    setVariantMap((prev) => ({
+      ...prev,
+      [key]: { ...(prev[key] || { qty: 0 }), sku },
+    }));
   };
 
   function variantKey(attrs: Record<string, string>): string {
@@ -187,8 +214,10 @@ export default function OptionsBuilder({
   }
   // parseVariantKey() removed (unused)
 
-  const addRow = () => setRows((r) => [...r, { id: uuid(), name: "", valuesText: "" }]);
-  const removeRow = (id: string) => setRows((r) => r.filter((x) => x.id !== id));
+  const addRow = () =>
+    setRows((r) => [...r, { id: uuid(), name: "", valuesText: "" }]);
+  const removeRow = (id: string) =>
+    setRows((r) => r.filter((x) => x.id !== id));
 
   return (
     <div className="space-y-2">
@@ -202,7 +231,9 @@ export default function OptionsBuilder({
           aria-pressed={enabled}
           onClick={() => setEnabled((v) => !v)}
           className={`inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
-            enabled ? "bg-emerald-500 border-emerald-500" : "bg-gray-200 border-gray-300"
+            enabled
+              ? "bg-emerald-500 border-emerald-500"
+              : "bg-gray-200 border-gray-300"
           }`}
         >
           <span
@@ -220,13 +251,20 @@ export default function OptionsBuilder({
           </div>
 
           {rows.map((row) => (
-            <div key={row.id} className="grid grid-cols-1 sm:grid-cols-[1fr_2fr_auto] gap-2 items-start">
+            <div
+              key={row.id}
+              className="grid grid-cols-1 sm:grid-cols-[1fr_2fr_auto] gap-2 items-start"
+            >
               <input
                 className="border rounded px-3 py-2"
                 placeholder="Attribute (e.g. Size or Color)*"
                 value={row.name}
                 onChange={(e) =>
-                  setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, name: e.target.value } : r)))
+                  setRows((prev) =>
+                    prev.map((r) =>
+                      r.id === row.id ? { ...r, name: e.target.value } : r,
+                    ),
+                  )
                 }
               />
               <div>
@@ -235,10 +273,18 @@ export default function OptionsBuilder({
                   placeholder="Options*"
                   value={row.valuesText}
                   onChange={(e) =>
-                    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, valuesText: e.target.value } : r)))
+                    setRows((prev) =>
+                      prev.map((r) =>
+                        r.id === row.id
+                          ? { ...r, valuesText: e.target.value }
+                          : r,
+                      ),
+                    )
                   }
                 />
-                <div className="mt-1 text-[11px] text-gray-500">Separate with commas, e.g. Red, Blue</div>
+                <div className="mt-1 text-[11px] text-gray-500">
+                  Separate with commas, e.g. Red, Blue
+                </div>
               </div>
               <button
                 type="button"
@@ -252,7 +298,11 @@ export default function OptionsBuilder({
             </div>
           ))}
 
-          <button type="button" onClick={addRow} className="text-sm inline-flex items-center gap-2 text-gray-700">
+          <button
+            type="button"
+            onClick={addRow}
+            className="text-sm inline-flex items-center gap-2 text-gray-700"
+          >
             <span className="text-lg leading-none">＋</span> ADD ATTRIBUTE
           </button>
 
@@ -261,35 +311,63 @@ export default function OptionsBuilder({
               <div className="text-xs font-semibold tracking-wide text-gray-600 mb-2">
                 VARIANT QUANTITIES (optional)
               </div>
-              <input ref={variantsRef} type="hidden" name="variants" defaultValue="" />
+              <input
+                ref={variantsRef}
+                type="hidden"
+                name="variants"
+                defaultValue=""
+              />
               <div className="space-y-2 max-h-64 overflow-auto pr-1">
                 {combos.map((attrs, idx) => {
                   const key = variantKey(attrs);
-                  const data = variantMap[key] || { qty: 0, sku: baseSku ? `${baseSku}-${idx + 1}` : "" };
+                  const data = variantMap[key] || {
+                    qty: 0,
+                    sku: baseSku ? `${baseSku}-${idx + 1}` : "",
+                  };
                   const qty = data.qty ?? 0;
-                  const sku = data.sku ?? (baseSku ? `${baseSku}-${idx + 1}` : "");
-                  const dupe = (sku.trim() && (skuCounts.get(sku.trim()) || 0) > 1);
+                  const sku =
+                    data.sku ?? (baseSku ? `${baseSku}-${idx + 1}` : "");
+                  const dupe =
+                    sku.trim() && (skuCounts.get(sku.trim()) || 0) > 1;
                   return (
-                    <div key={key || idx} className="flex items-center justify-between gap-2">
+                    <div
+                      key={key || idx}
+                      className="flex items-center justify-between gap-2"
+                    >
                       <div className="text-xs text-gray-700 flex flex-wrap gap-1">
                         {Object.entries(attrs).map(([k, v]) => (
-                          <span key={k + v} className="px-2 py-0.5 rounded-full border">{k}: {v}</span>
+                          <span
+                            key={k + v}
+                            className="px-2 py-0.5 rounded-full border"
+                          >
+                            {k}: {v}
+                          </span>
                         ))}
                       </div>
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
-                          className={`w-40 border rounded px-2 py-1 text-sm ${dupe ? 'border-red-500 bg-red-50' : ''}`}
+                          className={`w-40 border rounded px-2 py-1 text-sm ${dupe ? "border-red-500 bg-red-50" : ""}`}
                           value={sku}
                           onChange={(e) => setSku(attrs, e.target.value)}
-                          placeholder={baseSku ? `${baseSku}-${idx + 1}` : "SKU"}
+                          placeholder={
+                            baseSku ? `${baseSku}-${idx + 1}` : "SKU"
+                          }
                         />
                         <input
                           type="number"
                           min={0}
                           className="w-20 border rounded px-2 py-1 text-sm"
                           value={qty}
-                          onChange={(e) => setQty(attrs, Math.max(0, Math.floor(Number(e.target.value) || 0)))}
+                          onChange={(e) =>
+                            setQty(
+                              attrs,
+                              Math.max(
+                                0,
+                                Math.floor(Number(e.target.value) || 0),
+                              ),
+                            )
+                          }
                         />
                         <span className="text-xs text-gray-500">qty</span>
                       </div>
@@ -298,7 +376,10 @@ export default function OptionsBuilder({
                 })}
               </div>
               {Array.from(skuCounts.entries()).some(([, n]) => n > 1) && (
-                <div className="text-xs text-red-600 mt-2">Duplicate variant SKUs detected. Please ensure each SKU is unique.</div>
+                <div className="text-xs text-red-600 mt-2">
+                  Duplicate variant SKUs detected. Please ensure each SKU is
+                  unique.
+                </div>
               )}
             </div>
           )}

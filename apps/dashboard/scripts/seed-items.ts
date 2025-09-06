@@ -104,7 +104,7 @@ function randomSku(existing: Set<string>) {
   do {
     sku = `TP-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${randInt(
       100,
-      999
+      999,
     )}`;
   } while (existing.has(sku));
   existing.add(sku);

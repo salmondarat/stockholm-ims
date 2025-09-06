@@ -1,7 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const EU = new Set([
-  "AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE"
+  "AT",
+  "BE",
+  "BG",
+  "HR",
+  "CY",
+  "CZ",
+  "DK",
+  "EE",
+  "FI",
+  "FR",
+  "DE",
+  "GR",
+  "HU",
+  "IE",
+  "IT",
+  "LV",
+  "LT",
+  "LU",
+  "MT",
+  "NL",
+  "PL",
+  "PT",
+  "RO",
+  "SK",
+  "SI",
+  "ES",
+  "SE",
 ]);
 
 function mapCountryTo({ country }: { country?: string | null }) {
@@ -15,7 +41,10 @@ async function fetchExternal(): Promise<{ country?: string | null }> {
   try {
     const ac = new AbortController();
     const t = setTimeout(() => ac.abort(), 1500);
-    const res = await fetch("https://ipapi.co/json/", { signal: ac.signal, cache: "no-store" });
+    const res = await fetch("https://ipapi.co/json/", {
+      signal: ac.signal,
+      cache: "no-store",
+    });
     clearTimeout(t);
     if (!res.ok) throw new Error(String(res.status));
     const j = (await res.json()) as { country?: string };
@@ -40,4 +69,3 @@ export async function GET(req: NextRequest) {
   const ext = await fetchExternal();
   return NextResponse.json(mapCountryTo(ext));
 }
-

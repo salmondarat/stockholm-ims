@@ -13,9 +13,28 @@ type Plan = {
 };
 
 const PLANS: Plan[] = [
-  { name: "Starter", monthly: 0, note: "Up to 100 items", cta: "Start free", badge: { label: "Free", color: "success" } },
-  { name: "Team", monthly: 8, note: "Per user / month", cta: "See details", badge: { label: "Most popular", color: "primary" }, popular: true },
-  { name: "Business", monthly: 19, note: "Per user / month", cta: "See details", badge: { label: "Best value", color: "brand" } },
+  {
+    name: "Starter",
+    monthly: 0,
+    note: "Up to 100 items",
+    cta: "Start free",
+    badge: { label: "Free", color: "success" },
+  },
+  {
+    name: "Team",
+    monthly: 8,
+    note: "Per user / month",
+    cta: "See details",
+    badge: { label: "Most popular", color: "primary" },
+    popular: true,
+  },
+  {
+    name: "Business",
+    monthly: 19,
+    note: "Per user / month",
+    cta: "See details",
+    badge: { label: "Best value", color: "brand" },
+  },
 ];
 
 export default function PricingStrip() {
@@ -41,7 +60,11 @@ export default function PricingStrip() {
         <div className="relative inline-flex items-center gap-2 text-sm whitespace-nowrap">
           {/* Left overlay: discount + info (does not affect centering) */}
           <span className="absolute right-full pr-2 inline-flex items-center gap-1">
-            <span className={`badge badge-success ${annual ? "" : "invisible"}`}>Save ~20%</span>
+            <span
+              className={`badge badge-success ${annual ? "" : "invisible"}`}
+            >
+              Save ~20%
+            </span>
             <button
               type="button"
               className="h-5 w-5 grid place-items-center rounded-full border border-subtle text-[10px] text-muted bg-white hover:bg-gray-100"
@@ -56,10 +79,13 @@ export default function PricingStrip() {
           </span>
           {showTip && (
             <div className="absolute bottom-full right-0 mb-2 z-20 max-w-[260px] rounded-md border border-subtle bg-card text-xs text-[--foreground] p-2 shadow">
-              Annual billing applies ~20% discount. Price shown is per user per month, billed yearly.
+              Annual billing applies ~20% discount. Price shown is per user per
+              month, billed yearly.
             </div>
           )}
-          <span className={!annual ? "font-medium" : "text-muted"}>Monthly</span>
+          <span className={!annual ? "font-medium" : "text-muted"}>
+            Monthly
+          </span>
           <button
             type="button"
             className={`relative inline-flex h-6 w-10 items-center rounded-full border transition-colors ${annual ? "bg-[--primary] border-transparent" : "bg-gray-200"}`}
@@ -84,27 +110,39 @@ export default function PricingStrip() {
           >
             {p.popular && (
               <div className="absolute -top-5 left-0 right-0">
-                <div className="mx-4 rounded-md bg-[--primary] text-[--primary-foreground] text-xs py-1 text-center">Most popular</div>
+                <div className="mx-4 rounded-md bg-[--primary] text-[--primary-foreground] text-xs py-1 text-center">
+                  Most popular
+                </div>
               </div>
             )}
             {p.badge && (
               <div className="absolute -top-3 left-0 right-0 flex justify-center">
-                <span className={`badge ${p.badge.color === "success" ? "badge-success" : p.badge.color === "brand" ? "badge-brand" : "badge-primary"}`}>
+                <span
+                  className={`badge ${p.badge.color === "success" ? "badge-success" : p.badge.color === "brand" ? "badge-brand" : "badge-primary"}`}
+                >
                   {p.badge.label}
                 </span>
               </div>
             )}
             <div className="text-sm text-muted">{p.name}</div>
             <div className="mt-1 text-2xl font-semibold">{p.priceText}</div>
-            <div className="text-sm text-muted">{annual && p.monthly ? "Per user / mo (billed yearly)" : p.note}</div>
-            <Link href="/pricing" className="mt-3 inline-flex btn btn-outline" title={`Open pricing details for ${p.name}`}>
+            <div className="text-sm text-muted">
+              {annual && p.monthly ? "Per user / mo (billed yearly)" : p.note}
+            </div>
+            <Link
+              href="/pricing"
+              className="mt-3 inline-flex btn btn-outline"
+              title={`Open pricing details for ${p.name}`}
+            >
               {p.cta}
             </Link>
           </div>
         ))}
       </div>
       <div className="mt-4 text-center">
-        <Link href="/pricing" className="btn btn-primary btn-pill">Compare full plans</Link>
+        <Link href="/pricing" className="btn btn-primary btn-pill">
+          Compare full plans
+        </Link>
       </div>
     </div>
   );

@@ -7,9 +7,9 @@ let client: S3Client | null = null;
 function hasS3Config() {
   return Boolean(
     env.S3_ENDPOINT &&
-    env.S3_BUCKET &&
-    env.S3_ACCESS_KEY_ID &&
-    env.S3_SECRET_ACCESS_KEY
+      env.S3_BUCKET &&
+      env.S3_ACCESS_KEY_ID &&
+      env.S3_SECRET_ACCESS_KEY,
   );
 }
 

@@ -10,7 +10,11 @@ export async function getLowStockCount(): Promise<number> {
   const rows = await db.item.findMany({
     select: { quantity: true, lowStockThreshold: true },
   });
-  return rows.filter((r) => (r.lowStockThreshold ?? 0) > 0 && r.quantity <= (r.lowStockThreshold ?? 0)).length;
+  return rows.filter(
+    (r) =>
+      (r.lowStockThreshold ?? 0) > 0 &&
+      r.quantity <= (r.lowStockThreshold ?? 0),
+  ).length;
 }
 
 /**
@@ -19,7 +23,7 @@ export async function getLowStockCount(): Promise<number> {
 export const getLowStockCountCached = unstable_cache(
   async () => await getLowStockCount(),
   ["low-stock-count"],
-  { revalidate: 60, tags: ["low-stock"] }
+  { revalidate: 60, tags: ["low-stock"] },
 );
 
 /** Panggil ini dari Server Action CRUD items agar badge langsung update */

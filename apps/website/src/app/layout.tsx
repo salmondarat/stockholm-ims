@@ -3,10 +3,10 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import "./globals.css";
 
-
 export const metadata: Metadata = {
   title: "Stockholm IMS — Simple inventory for teams",
-  description: "Track items, stock levels, and media with a fast, modern dashboard.",
+  description:
+    "Track items, stock levels, and media with a fast, modern dashboard.",
 };
 
 import NavigationMenu from "../components/ui/navigation-menu";
@@ -50,26 +50,64 @@ function SiteFooter() {
           <div>
             <div className="font-semibold text-[--foreground]">Product</div>
             <ul className="mt-3 space-y-2 text-muted">
-              <li><Link href="/features" className="hover:underline">Features</Link></li>
-              <li><Link href="/solutions" className="hover:underline">Solutions</Link></li>
-              <li><Link href="/pricing" className="hover:underline">Pricing</Link></li>
-              <li><Link href={`${appUrl}/app`} className="hover:underline">Open App</Link></li>
+              <li>
+                <Link href="/features" className="hover:underline">
+                  Features
+                </Link>
+              </li>
+              <li>
+                <Link href="/solutions" className="hover:underline">
+                  Solutions
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="hover:underline">
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link href={`${appUrl}/app`} className="hover:underline">
+                  Open App
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
             <div className="font-semibold text-[--foreground]">Company</div>
             <ul className="mt-3 space-y-2 text-muted">
-              <li><Link href="/about" className="hover:underline">About</Link></li>
-              <li><Link href="/contact" className="hover:underline">Contact</Link></li>
-              <li><Link href="/sitemap" className="hover:underline">Sitemap</Link></li>
+              <li>
+                <Link href="/about" className="hover:underline">
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:underline">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link href="/sitemap" className="hover:underline">
+                  Sitemap
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
             <div className="font-semibold text-[--foreground]">Legal</div>
             <ul className="mt-3 space-y-2 text-muted">
-              <li><Link href="/privacy" className="hover:underline">Privacy</Link></li>
-              <li><Link href="/terms" className="hover:underline">Terms</Link></li>
-              <li><ManageCookiesLink className="hover:underline" /></li>
+              <li>
+                <Link href="/privacy" className="hover:underline">
+                  Privacy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="hover:underline">
+                  Terms
+                </Link>
+              </li>
+              <li>
+                <ManageCookiesLink className="hover:underline" />
+              </li>
             </ul>
           </div>
           <div className="flex items-start gap-2 justify-start sm:justify-end">
@@ -77,15 +115,20 @@ function SiteFooter() {
             <ThemeToggle />
           </div>
         </div>
-        <div className="mt-10 text-center text-sm text-muted">© {year} Stockholm IMS</div>
+        <div className="mt-10 text-center text-sm text-muted">
+          © {year} Stockholm IMS
+        </div>
       </div>
     </footer>
   );
 }
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const store = await cookies();
-  const theme = (store.get("theme")?.value as "light" | "dark" | undefined) || "light";
+  const theme =
+    (store.get("theme")?.value as "light" | "dark" | undefined) || "light";
   const lang = (store.get("lang")?.value as "en" | "id" | undefined) || "en";
   return (
     <html lang={lang} data-theme={theme}>

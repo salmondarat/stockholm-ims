@@ -11,9 +11,24 @@ type Testimonial = {
 };
 
 const ITEMS: Testimonial[] = [
-  { quote: "We replaced spreadsheets in a week.", author: "Ava M.", role: "Ops Lead, Retail", avatar: "/logos/partners/stripe.svg" },
-  { quote: "Barcode scanning on phones is a game‑changer.", author: "Luis R.", role: "Warehouse Manager", avatar: "/logos/partners/github.svg" },
-  { quote: "The variant system fits our catalog perfectly.", author: "Mira K.", role: "E‑commerce Director", avatar: "/logos/partners/shopify.svg" },
+  {
+    quote: "We replaced spreadsheets in a week.",
+    author: "Ava M.",
+    role: "Ops Lead, Retail",
+    avatar: "/logos/partners/stripe.svg",
+  },
+  {
+    quote: "Barcode scanning on phones is a game‑changer.",
+    author: "Luis R.",
+    role: "Warehouse Manager",
+    avatar: "/logos/partners/github.svg",
+  },
+  {
+    quote: "The variant system fits our catalog perfectly.",
+    author: "Mira K.",
+    role: "E‑commerce Director",
+    avatar: "/logos/partners/shopify.svg",
+  },
 ];
 
 export default function TestimonialCarousel() {
@@ -33,7 +48,13 @@ export default function TestimonialCarousel() {
         <div className="mt-4 flex items-center gap-3">
           <div className="h-9 w-9 rounded-full bg-white border border-subtle grid place-items-center overflow-hidden">
             {active.avatar ? (
-              <Image src={active.avatar} alt="" width={24} height={24} className="opacity-80" />
+              <Image
+                src={active.avatar}
+                alt=""
+                width={24}
+                height={24}
+                className="opacity-80"
+              />
             ) : (
               <span className="text-xs">🙂</span>
             )}
@@ -51,11 +72,10 @@ export default function TestimonialCarousel() {
               onClick={() => setIdx(i)}
               className={`h-2 w-2 rounded-full ${i === idx ? "bg-[--primary]" : "bg-gray-300"}`}
               aria-label={`Go to slide ${i + 1}`}
-            />)
-          )}
+            />
+          ))}
         </div>
       </div>
     </div>
   );
 }
-

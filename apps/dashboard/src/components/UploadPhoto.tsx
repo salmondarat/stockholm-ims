@@ -87,8 +87,8 @@ export default function UploadPhoto({
         contentType === "image/png"
           ? "png"
           : contentType === "image/webp"
-          ? "webp"
-          : "jpg";
+            ? "webp"
+            : "jpg";
       const ext = /^[a-z0-9]+$/i.test(fromName) ? fromName : fallbackExt;
 
       const res = await fetch(presignPath, {

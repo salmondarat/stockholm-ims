@@ -54,7 +54,7 @@ export default function CategoryCombobox({
   }, [categories, query]);
 
   const exact = categories.find(
-    (c) => c.name.trim().toLowerCase() === query.trim().toLowerCase()
+    (c) => c.name.trim().toLowerCase() === query.trim().toLowerCase(),
   );
 
   const choose = (text: string) => {
@@ -109,7 +109,8 @@ export default function CategoryCombobox({
             {query.trim() && !exact && (
               <div className="border-t p-2 bg-gray-50 flex items-center justify-between">
                 <div className="text-xs text-gray-600 truncate">
-                  Create new: <span className="font-medium">{query.trim()}</span>
+                  Create new:{" "}
+                  <span className="font-medium">{query.trim()}</span>
                 </div>
                 <button
                   type="button"
@@ -126,4 +127,3 @@ export default function CategoryCombobox({
     </div>
   );
 }
-

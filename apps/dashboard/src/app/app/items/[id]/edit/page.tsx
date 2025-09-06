@@ -4,7 +4,11 @@ import EditItemClient from "./EditItemClient";
 
 export const metadata = { title: "Edit Item — Stockholm IMS" };
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
 
   const item = await db.item.findUnique({
@@ -26,7 +30,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   });
   if (!item) return <div className="p-6">Item not found.</div>;
 
-  let variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
+  let variants: Array<{
+    attrs: Record<string, string>;
+    qty: number;
+    sku?: string;
+  }> = [];
   try {
     const vrows = await db.itemVariant.findMany({
       where: { itemId: id },
@@ -37,7 +45,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         const a = v.attrs as unknown;
         if (a && typeof a === "object" && !Array.isArray(a)) {
           const out: Record<string, string> = {};
-          for (const [k, val] of Object.entries(a as Record<string, unknown>)) out[String(k)] = String(val);
+          for (const [k, val] of Object.entries(a as Record<string, unknown>))
+            out[String(k)] = String(val);
           return out;
         }
         return {} as Record<string, string>;
@@ -58,13 +67,14 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     select: { id: true, name: true, parentId: true },
     orderBy: [{ parentId: "asc" }, { name: "asc" }],
   });
-  const currentCategoryName = categories.find((c) => c.id === (item.categoryId ?? ""))?.name || "";
+  const currentCategoryName =
+    categories.find((c) => c.id === (item.categoryId ?? ""))?.name || "";
 
   const s3Enabled = Boolean(
     process.env.S3_ENDPOINT &&
       process.env.S3_BUCKET &&
       process.env.S3_ACCESS_KEY_ID &&
-      process.env.S3_SECRET_ACCESS_KEY
+      process.env.S3_SECRET_ACCESS_KEY,
   );
 
   return (

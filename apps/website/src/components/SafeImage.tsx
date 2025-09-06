@@ -9,7 +9,12 @@ type Props = Omit<ImageProps, "src" | "alt"> & {
   fallbackSrc?: string;
 };
 
-export default function SafeImage({ src, alt, fallbackSrc = "/file.svg", ...rest }: Props) {
+export default function SafeImage({
+  src,
+  alt,
+  fallbackSrc = "/file.svg",
+  ...rest
+}: Props) {
   const [current, setCurrent] = useState(src);
   return (
     <Image
@@ -21,4 +26,3 @@ export default function SafeImage({ src, alt, fallbackSrc = "/file.svg", ...rest
     />
   );
 }
-

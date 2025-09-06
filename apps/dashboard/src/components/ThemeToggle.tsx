@@ -7,7 +7,8 @@ const KEY = "app-theme";
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   useEffect(() => {
-    const saved = (localStorage.getItem(KEY) as "light" | "dark" | null) || "light";
+    const saved =
+      (localStorage.getItem(KEY) as "light" | "dark" | null) || "light";
     setTheme(saved);
     document.documentElement.classList.toggle("dark", saved === "dark");
   }, []);
@@ -16,7 +17,9 @@ export default function ThemeToggle() {
     const next = theme === "light" ? "dark" : "light";
     setTheme(next);
     document.documentElement.classList.toggle("dark", next === "dark");
-    try { localStorage.setItem(KEY, next); } catch {}
+    try {
+      localStorage.setItem(KEY, next);
+    } catch {}
   };
 
   return (
@@ -25,4 +28,3 @@ export default function ThemeToggle() {
     </button>
   );
 }
-

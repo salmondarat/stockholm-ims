@@ -17,19 +17,19 @@ import {
 
 const numberNonNegative = z.preprocess(
   (v) => (v === "" || v == null ? 0 : v),
-  z.coerce.number().int().min(0)
+  z.coerce.number().int().min(0),
 );
 
 const numberMoney = z.preprocess(
   (v) => (v === "" || v == null ? undefined : v),
-  z.coerce.number().min(0).optional()
+  z.coerce.number().min(0).optional(),
 );
 
 const ItemSchema = z.object({
   name: z.string().min(1),
   sku: z.preprocess(
     (v) => (typeof v === "string" ? v.trim() : v),
-    z.string().min(1, { message: "SKU is required" })
+    z.string().min(1, { message: "SKU is required" }),
   ),
   quantity: numberNonNegative, // handles empty -> 0
   location: z.string().optional().nullable(),
@@ -39,7 +39,7 @@ const ItemSchema = z.object({
   price: numberMoney, // optional price
   categoryId: z.preprocess(
     (v) => (v === "" || v == null ? undefined : v),
-    z.string().uuid().optional()
+    z.string().uuid().optional(),
   ),
   category: z.preprocess(
     (v) =>
@@ -48,7 +48,7 @@ const ItemSchema = z.object({
         : typeof v === "string" && v.trim() === ""
           ? undefined
           : v,
-    z.string().min(1).optional()
+    z.string().min(1).optional(),
   ),
   options: z.string().optional().nullable(), // JSON text
 });
@@ -68,7 +68,7 @@ const S3_FORCE_PATH_STYLE =
   (process.env.S3_FORCE_PATH_STYLE ?? "true").toLowerCase() === "true";
 
 const s3Enabled = Boolean(
-  S3_ENDPOINT && S3_BUCKET && S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY
+  S3_ENDPOINT && S3_BUCKET && S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY,
 );
 
 let s3: S3Client | null = null;
@@ -132,34 +132,37 @@ async function ensureCategoryByName(name: string): Promise<string> {
   const found = await db.category.findFirst({ where: { slug } });
   if (found) return found.id;
   try {
-    const created = await db.category.create({ data: { name: name.trim(), slug, parentId: null } });
+    const created = await db.category.create({
+      data: { name: name.trim(), slug, parentId: null },
+    });
     return created.id;
   } catch {
     // Unique slug might already exist (race). Fetch again.
     const again = await db.category.findFirst({ where: { slug } });
     if (again) return again.id;
     // Fallback: create with slightly modified slug
-    const alt = await db.category.create({ data: { name: name.trim(), slug: `${slug}-${Date.now()}` } });
+    const alt = await db.category.create({
+      data: { name: name.trim(), slug: `${slug}-${Date.now()}` },
+    });
     return alt.id;
   }
 }
 
 async function savePhoto(
   file: File | null,
-  target: StorageTarget
+  target: StorageTarget,
 ): Promise<string | null> {
   if (!file || file.size === 0) return null;
   if (!ALLOWED.has(file.type)) throw new Error("Only JPG/PNG/WEBP allowed");
   if (file.size > MAX_SIZE) throw new Error("Max file size 8MB");
 
-  const ext =
-    (() => {
-      const fromName = (file.name.split(".").pop() || "").toLowerCase();
-      if (ALLOWED_EXT.has(fromName)) return fromName;
-      if (file.type === "image/png") return "png";
-      if (file.type === "image/webp") return "webp";
-      return "jpg";
-    })();
+  const ext = (() => {
+    const fromName = (file.name.split(".").pop() || "").toLowerCase();
+    if (ALLOWED_EXT.has(fromName)) return fromName;
+    if (file.type === "image/png") return "png";
+    if (file.type === "image/webp") return "webp";
+    return "jpg";
+  })();
   const name = `${crypto.randomUUID()}.${ext}`;
 
   // Decide target storage based on user preference and availability
@@ -178,7 +181,7 @@ async function savePhoto(
         Key: key,
         Body: body,
         ContentType: file.type || "image/jpeg",
-      })
+      }),
     );
     return publicS3UrlForKey(key);
   }
@@ -192,7 +195,7 @@ async function savePhoto(
 
 async function savePhotos(
   files: File[],
-  target: StorageTarget
+  target: StorageTarget,
 ): Promise<string[]> {
   const urls: string[] = [];
   for (const file of files) {
@@ -212,7 +215,7 @@ export type CreateItemState = {
 
 export async function createItemAction(
   _prev: CreateItemState,
-  form: FormData
+  form: FormData,
 ): Promise<CreateItemState> {
   try {
     const optionsEnabled = String(form.get("optionsEnabled") || "1") === "1";
@@ -238,8 +241,8 @@ export async function createItemAction(
                 .split(/[,\n]/g) // koma atau baris baru
                 .map((s) => s.trim())
                 .filter(Boolean)
-                .map((s) => s.toLowerCase())
-            )
+                .map((s) => s.toLowerCase()),
+            ),
           ).slice(0, 20) // batasi jumlah tag (opsional)
         : null;
 
@@ -274,7 +277,10 @@ export async function createItemAction(
 
     const mediaUrls: string[] = [];
     if (storage === "s3") {
-      const keys = form.getAll("mediaKey").map((x) => String(x)).filter(Boolean);
+      const keys = form
+        .getAll("mediaKey")
+        .map((x) => String(x))
+        .filter(Boolean);
       for (const key of keys) mediaUrls.push(publicS3UrlForKey(key));
     } else {
       // local or server-side S3 upload
@@ -287,17 +293,26 @@ export async function createItemAction(
 
     // Parse options JSON if provided
     let optionsObj: Record<string, unknown> | null = null;
-    if (optionsEnabled && typeof parsed.options === "string" && parsed.options.trim()) {
+    if (
+      optionsEnabled &&
+      typeof parsed.options === "string" &&
+      parsed.options.trim()
+    ) {
       try {
         const o = JSON.parse(parsed.options);
-        if (o && typeof o === "object") optionsObj = o as Record<string, unknown>;
+        if (o && typeof o === "object")
+          optionsObj = o as Record<string, unknown>;
       } catch {
         /* ignore */
       }
     }
 
     // Optional variants JSON: [{ attrs: { Size: "M", Color: "Red" }, qty: 10, sku?: string }, ...]
-    let variantsArr: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
+    let variantsArr: Array<{
+      attrs: Record<string, string>;
+      qty: number;
+      sku?: string;
+    }> = [];
     const variantsRaw = form.get("variants");
     if (typeof variantsRaw === "string" && variantsRaw.trim()) {
       try {
@@ -305,11 +320,20 @@ export async function createItemAction(
         if (Array.isArray(arr)) {
           variantsArr = arr
             .map((x, i) => ({
-              attrs: x && typeof x === "object" && typeof x.attrs === "object" ? (x.attrs as Record<string, string>) : {},
+              attrs:
+                x && typeof x === "object" && typeof x.attrs === "object"
+                  ? (x.attrs as Record<string, string>)
+                  : {},
               qty: Number.isFinite(x?.qty) ? Number(x.qty) : 0,
-              sku: typeof x?.sku === "string" && x.sku ? x.sku : `${parsed.sku}-${i + 1}`,
+              sku:
+                typeof x?.sku === "string" && x.sku
+                  ? x.sku
+                  : `${parsed.sku}-${i + 1}`,
             }))
-            .filter((x) => x.qty > 0 || (typeof x.sku === "string" && x.sku.length > 0));
+            .filter(
+              (x) =>
+                x.qty > 0 || (typeof x.sku === "string" && x.sku.length > 0),
+            );
         }
       } catch {
         /* ignore */
@@ -318,7 +342,7 @@ export async function createItemAction(
 
     // Derive attribute arrays from variants to keep options consistent
     const deriveOptionsFromVariants = (
-      variants: Array<{ attrs: Record<string, string> }>
+      variants: Array<{ attrs: Record<string, string> }>,
     ): Record<string, string[]> => {
       const map = new Map<string, Set<string>>();
       for (const v of variants) {
@@ -346,8 +370,14 @@ export async function createItemAction(
       return null;
     })();
 
-    const variantsProvided = optionsEnabled && typeof variantsRaw === "string" && variantsRaw.trim().length > 0;
-    const quantityFromVariants = variantsArr.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0);
+    const variantsProvided =
+      optionsEnabled &&
+      typeof variantsRaw === "string" &&
+      variantsRaw.trim().length > 0;
+    const quantityFromVariants = variantsArr.reduce(
+      (acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0),
+      0,
+    );
     const inserted = await db.item.create({
       data: {
         name: parsed.name,
@@ -376,7 +406,11 @@ export async function createItemAction(
     // insert media rows
     if (mediaUrls.length) {
       await db.itemMedia.createMany({
-        data: mediaUrls.map((url, idx) => ({ itemId: inserted.id, url, position: idx })),
+        data: mediaUrls.map((url, idx) => ({
+          itemId: inserted.id,
+          url,
+          position: idx,
+        })),
       });
     }
 
@@ -414,7 +448,7 @@ export type UpdateItemState = {
 
 export async function updateItemAction(
   _prev: UpdateItemState,
-  form: FormData
+  form: FormData,
 ): Promise<UpdateItemState> {
   try {
     const optionsEnabled = String(form.get("optionsEnabled") || "1") === "1";
@@ -443,8 +477,8 @@ export async function updateItemAction(
                 .split(/[,\n]/g)
                 .map((s) => s.trim())
                 .filter(Boolean)
-                .map((s) => s.toLowerCase())
-            )
+                .map((s) => s.toLowerCase()),
+            ),
           ).slice(0, 20)
         : null;
 
@@ -455,7 +489,10 @@ export async function updateItemAction(
     // media adds
     const mediaUrls: string[] = [];
     if (storage === "s3") {
-      const keys = form.getAll("mediaKey").map((x) => String(x)).filter(Boolean);
+      const keys = form
+        .getAll("mediaKey")
+        .map((x) => String(x))
+        .filter(Boolean);
       for (const key of keys) mediaUrls.push(publicS3UrlForKey(key));
     } else {
       const files = form
@@ -466,9 +503,15 @@ export async function updateItemAction(
     }
 
     // media removals
-    const removeIds = form.getAll("removeMediaId").map((x) => String(x)).filter(Boolean);
+    const removeIds = form
+      .getAll("removeMediaId")
+      .map((x) => String(x))
+      .filter(Boolean);
     // ordering and cover
-    const orderIds = form.getAll("orderMediaId").map((x) => String(x)).filter(Boolean);
+    const orderIds = form
+      .getAll("orderMediaId")
+      .map((x) => String(x))
+      .filter(Boolean);
     const coverMediaId = (form.get("coverMediaId") as string | null) || null;
 
     // Apply all media operations atomically
@@ -480,7 +523,8 @@ export async function updateItemAction(
         if (optionsEnabled && str) {
           try {
             const o = JSON.parse(str);
-            if (o && typeof o === "object") optionsObj = o as Record<string, unknown>;
+            if (o && typeof o === "object")
+              optionsObj = o as Record<string, unknown>;
           } catch {
             optionsObj = undefined; // leave unchanged when invalid
           }
@@ -492,25 +536,45 @@ export async function updateItemAction(
       }
 
       // Optional variants JSON
-    let variantsArr: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> = [];
+      let variantsArr: Array<{
+        attrs: Record<string, string>;
+        qty: number;
+        sku?: string;
+      }> = [];
       const variantsRaw = form.get("variants");
-      if (optionsEnabled && typeof variantsRaw === "string" && variantsRaw.trim()) {
+      if (
+        optionsEnabled &&
+        typeof variantsRaw === "string" &&
+        variantsRaw.trim()
+      ) {
         try {
           const arr = JSON.parse(variantsRaw);
           if (Array.isArray(arr)) {
             variantsArr = arr
               .map((x, i) => ({
-                attrs: x && typeof x === "object" && typeof x.attrs === "object" ? (x.attrs as Record<string, string>) : {},
+                attrs:
+                  x && typeof x === "object" && typeof x.attrs === "object"
+                    ? (x.attrs as Record<string, string>)
+                    : {},
                 qty: Number.isFinite(x?.qty) ? Number(x.qty) : 0,
-                sku: typeof x?.sku === "string" && x.sku ? x.sku : `${parsed.sku}-${i + 1}`,
+                sku:
+                  typeof x?.sku === "string" && x.sku
+                    ? x.sku
+                    : `${parsed.sku}-${i + 1}`,
               }))
-              .filter((x) => x.qty > 0 || (typeof x.sku === "string" && x.sku.length > 0));
+              .filter(
+                (x) =>
+                  x.qty > 0 || (typeof x.sku === "string" && x.sku.length > 0),
+              );
           }
         } catch {
           /* ignore */
         }
       }
-      const existing = await tx.item.findUnique({ where: { id }, select: { photoUrl: true, options: true } });
+      const existing = await tx.item.findUnique({
+        where: { id },
+        select: { photoUrl: true, options: true },
+      });
       // Update fields
       // Resolve category
       const resolvedCategoryId: string | null = await (async () => {
@@ -526,30 +590,42 @@ export async function updateItemAction(
 
       // Determine whether to use variant-derived quantity
       // Prefer incoming variants JSON when present; otherwise fall back to existing ItemVariant rows
-      const hasIncomingVariants = typeof variantsRaw === "string" && variantsRaw.trim().length > 0;
+      const hasIncomingVariants =
+        typeof variantsRaw === "string" && variantsRaw.trim().length > 0;
       const existingVariants = await tx.itemVariant.findMany({
         where: { itemId: id },
         select: { qty: true, sku: true, attrs: true },
       });
-      const variantsProvided = optionsEnabled && (hasIncomingVariants || existingVariants.length > 0);
-      const variantsToSum = hasIncomingVariants ? variantsArr : existingVariants;
+      const variantsProvided =
+        optionsEnabled && (hasIncomingVariants || existingVariants.length > 0);
+      const variantsToSum = hasIncomingVariants
+        ? variantsArr
+        : existingVariants;
       const quantityFromVariants = variantsToSum.reduce(
-        (acc, v) => acc + (Number.isFinite(v?.qty as number) ? Number(v?.qty) : 0),
-        0
+        (acc, v) =>
+          acc + (Number.isFinite(v?.qty as number) ? Number(v?.qty) : 0),
+        0,
       );
       // Build final options merging existing when needed
       const baseOptions: Record<string, unknown> = (() => {
-      if (typeof optionsObj === "undefined") {
-        const ex = existing?.options;
-        return ex && typeof ex === "object" ? ({ ...(ex as Record<string, unknown>) } as Record<string, unknown>) : {};
-      }
-      if (optionsObj === null) return {};
-      return { ...(optionsObj || {}) };
-    })();
+        if (typeof optionsObj === "undefined") {
+          const ex = existing?.options;
+          return ex && typeof ex === "object"
+            ? ({ ...(ex as Record<string, unknown>) } as Record<
+                string,
+                unknown
+              >)
+            : {};
+        }
+        if (optionsObj === null) return {};
+        return { ...(optionsObj || {}) };
+      })();
 
       if (variantsProvided) {
         // Merge derived attribute arrays from the chosen variants
-        const chosenVariants = hasIncomingVariants ? variantsArr : existingVariants;
+        const chosenVariants = hasIncomingVariants
+          ? variantsArr
+          : existingVariants;
         const map = new Map<string, Set<string>>();
         for (const v of chosenVariants) {
           const attrs = (v as { attrs?: Record<string, string> }).attrs || {};
@@ -561,7 +637,8 @@ export async function updateItemAction(
           }
         }
         const attrsFromVariants: Record<string, string[]> = {};
-        for (const [k, set] of map.entries()) attrsFromVariants[k] = Array.from(set.values());
+        for (const [k, set] of map.entries())
+          attrsFromVariants[k] = Array.from(set.values());
         for (const [k, list] of Object.entries(attrsFromVariants)) {
           const existingList = Array.isArray(baseOptions[k])
             ? (baseOptions[k] as unknown[]).map(String)
@@ -574,7 +651,12 @@ export async function updateItemAction(
           await tx.itemVariant.deleteMany({ where: { itemId: id } });
           if (variantsArr.length) {
             await tx.itemVariant.createMany({
-              data: variantsArr.map((v) => ({ itemId: id, sku: v.sku ?? null, qty: v.qty, attrs: v.attrs })),
+              data: variantsArr.map((v) => ({
+                itemId: id,
+                sku: v.sku ?? null,
+                qty: v.qty,
+                attrs: v.attrs,
+              })),
             });
           }
         }
@@ -608,7 +690,12 @@ export async function updateItemAction(
       const currentCount = await tx.itemMedia.count({ where: { itemId: id } });
       if (mediaUrls.length) {
         await tx.itemMedia.createMany({
-          data: mediaUrls.map((url, idx) => ({ id: crypto.randomUUID(), itemId: id, url, position: currentCount + idx })),
+          data: mediaUrls.map((url, idx) => ({
+            id: crypto.randomUUID(),
+            itemId: id,
+            url,
+            position: currentCount + idx,
+          })),
         });
       }
 
@@ -617,14 +704,20 @@ export async function updateItemAction(
         for (let i = 0; i < orderIds.length; i++) {
           const mid = orderIds[i];
           if (removeIds.includes(mid)) continue;
-          await tx.itemMedia.update({ where: { id: mid }, data: { position: i } });
+          await tx.itemMedia.update({
+            where: { id: mid },
+            data: { position: i },
+          });
         }
       }
 
       // Recompute primary photoUrl from remaining media (or new additions)
       let photoUrl: string | null = null;
       if (coverMediaId) {
-        const cover = (await tx.itemMedia.findUnique({ where: { id: coverMediaId }, select: { url: true } })) as { url: string } | null;
+        const cover = (await tx.itemMedia.findUnique({
+          where: { id: coverMediaId },
+          select: { url: true },
+        })) as { url: string } | null;
         photoUrl = cover?.url ?? null;
       } else {
         const first = (await tx.itemMedia.findFirst({
@@ -666,7 +759,7 @@ async function removeFileIfExists(publicUrl: string | null) {
     const key = publicUrl.substring(`${base}/${S3_BUCKET}/`.length);
     try {
       await getS3()!.send(
-        new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: key })
+        new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: key }),
       );
       return;
     } catch {

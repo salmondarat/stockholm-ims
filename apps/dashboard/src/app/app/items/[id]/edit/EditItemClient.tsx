@@ -48,24 +48,36 @@ export default function EditItemClient({
   price?: number;
   categoryName?: string;
   optionsJson?: string;
-  variants?: Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
+  variants?: Array<{
+    attrs: Record<string, string>;
+    qty: number;
+    sku?: string;
+  }>;
   categories?: Array<{ id: string; name: string; parentId: string | null }>;
   s3Enabled?: boolean;
 }) {
   const router = useRouter();
-  const [state, formAction] = useActionState<UpdateItemState, FormData>(updateItemAction, { ok: false });
+  const [state, formAction] = useActionState<UpdateItemState, FormData>(
+    updateItemAction,
+    { ok: false },
+  );
   const formRef = useRef<HTMLFormElement | null>(null);
-  const [storage, setStorage] = useState<"local" | "s3">(s3Enabled ? "s3" : "local");
+  const [storage, setStorage] = useState<"local" | "s3">(
+    s3Enabled ? "s3" : "local",
+  );
   const [removed, setRemoved] = useState<Record<string, boolean>>({});
   const [ordered, setOrdered] = useState(media);
   const [coverId, setCoverId] = useState<string | null>(
-    media.find((m) => m.url === primaryPhotoUrl)?.id || media[0]?.id || null
+    media.find((m) => m.url === primaryPhotoUrl)?.id || media[0]?.id || null,
   );
   const [showSaved, setShowSaved] = useState(false);
 
   const [category, setCategory] = useState<string>(categoryName || "");
   const [sku, setSku] = useState<string>(item.sku || "");
-  const [variantInfo, setVariantInfo] = useState<{ hasVariants: boolean; sumQty: number }>({ hasVariants: false, sumQty: 0 });
+  const [variantInfo, setVariantInfo] = useState<{
+    hasVariants: boolean;
+    sumQty: number;
+  }>({ hasVariants: false, sumQty: 0 });
 
   useEffect(() => {
     if (!state.ok) return;
@@ -119,32 +131,66 @@ export default function EditItemClient({
 
         <div>
           <label className="block text-sm mb-1">Name *</label>
-          <input name="name" required defaultValue={item.name} className="w-full border rounded px-3 py-2" />
+          <input
+            name="name"
+            required
+            defaultValue={item.name}
+            className="w-full border rounded px-3 py-2"
+          />
         </div>
 
         <div>
           <label className="block text-sm mb-1">SKU *</label>
-          <input name="sku" required value={sku} onChange={(e) => setSku(e.target.value)} className="w-full border rounded px-3 py-2" />
+          <input
+            name="sku"
+            required
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm mb-1">Quantity *</label>
-            <input type="number" name="quantity" min={0} defaultValue={item.quantity} required className="w-full border rounded px-3 py-2 disabled:bg-gray-50" readOnly={variantInfo.hasVariants} />
+            <input
+              type="number"
+              name="quantity"
+              min={0}
+              defaultValue={item.quantity}
+              required
+              className="w-full border rounded px-3 py-2 disabled:bg-gray-50"
+              readOnly={variantInfo.hasVariants}
+            />
             {variantInfo.hasVariants && (
-              <p className="text-xs text-gray-500 mt-1">Derived from variants: {variantInfo.sumQty}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Derived from variants: {variantInfo.sumQty}
+              </p>
             )}
           </div>
           <div>
             <label className="block text-sm mb-1">Low-stock Threshold</label>
-            <input type="number" name="lowStockThreshold" min={0} defaultValue={item.lowStockThreshold} className="w-full border rounded px-3 py-2" />
+            <input
+              type="number"
+              name="lowStockThreshold"
+              min={0}
+              defaultValue={item.lowStockThreshold}
+              className="w-full border rounded px-3 py-2"
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm mb-1">Price</label>
-            <input type="number" name="price" min={0} step="0.01" defaultValue={price} className="w-full border rounded px-3 py-2" />
+            <input
+              type="number"
+              name="price"
+              min={0}
+              step="0.01"
+              defaultValue={price}
+              className="w-full border rounded px-3 py-2"
+            />
           </div>
           <CategoryCombobox
             categories={categories.map((c) => ({ id: c.id, name: c.name }))}
@@ -158,21 +204,38 @@ export default function EditItemClient({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm mb-1">Location</label>
-            <input name="location" defaultValue={item.location} className="w-full border rounded px-3 py-2" />
+            <input
+              name="location"
+              defaultValue={item.location}
+              className="w-full border rounded px-3 py-2"
+            />
           </div>
           <div>
             <label className="block text-sm mb-1">Condition</label>
-            <input name="condition" defaultValue={item.condition} className="w-full border rounded px-3 py-2" />
+            <input
+              name="condition"
+              defaultValue={item.condition}
+              className="w-full border rounded px-3 py-2"
+            />
           </div>
         </div>
 
         <div>
           <label className="block text-sm mb-1">Tags</label>
-          <input name="tags" defaultValue={item.tags.join(", ")} className="w-full border rounded px-3 py-2" />
+          <input
+            name="tags"
+            defaultValue={item.tags.join(", ")}
+            className="w-full border rounded px-3 py-2"
+          />
           <p className="text-xs text-gray-500 mt-1">cable, usb-c, black</p>
         </div>
 
-        <OptionsBuilder defaultValue={optionsJson} baseSku={sku} initialVariants={variants} onSummaryChange={setVariantInfo} />
+        <OptionsBuilder
+          defaultValue={optionsJson}
+          baseSku={sku}
+          initialVariants={variants}
+          onSummaryChange={setVariantInfo}
+        />
 
         {/* Existing media list with reorder and cover selector */}
         <div className="space-y-2">
@@ -182,18 +245,38 @@ export default function EditItemClient({
               {ordered.map((m, idx) => (
                 <div key={m.id} className="relative border rounded-md p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.url} alt="media" className="h-24 w-full object-cover rounded" />
+                  <img
+                    src={m.url}
+                    alt="media"
+                    className="h-24 w-full object-cover rounded"
+                  />
                   <div className="mt-1 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
-                      <button type="button" className="px-1.5 py-0.5 border rounded" onClick={() => move(m.id, -1)} disabled={idx === 0}>
+                      <button
+                        type="button"
+                        className="px-1.5 py-0.5 border rounded"
+                        onClick={() => move(m.id, -1)}
+                        disabled={idx === 0}
+                      >
                         ↑
                       </button>
-                      <button type="button" className="px-1.5 py-0.5 border rounded" onClick={() => move(m.id, 1)} disabled={idx === ordered.length - 1}>
+                      <button
+                        type="button"
+                        className="px-1.5 py-0.5 border rounded"
+                        onClick={() => move(m.id, 1)}
+                        disabled={idx === ordered.length - 1}
+                      >
                         ↓
                       </button>
                     </div>
                     <label className="inline-flex items-center gap-1">
-                      <input type="radio" name="coverMediaId" value={m.id} checked={coverId === m.id} onChange={() => setCoverId(m.id)} />
+                      <input
+                        type="radio"
+                        name="coverMediaId"
+                        value={m.id}
+                        checked={coverId === m.id}
+                        onChange={() => setCoverId(m.id)}
+                      />
                       <span>Cover</span>
                     </label>
                   </div>
@@ -214,8 +297,14 @@ export default function EditItemClient({
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               <div className="relative border rounded-md p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={primaryPhotoUrl} alt="photo" className="h-24 w-full object-cover rounded" />
-                <div className="mt-1 text-[10px] text-gray-600">Existing primary photo</div>
+                <img
+                  src={primaryPhotoUrl}
+                  alt="photo"
+                  className="h-24 w-full object-cover rounded"
+                />
+                <div className="mt-1 text-[10px] text-gray-600">
+                  Existing primary photo
+                </div>
               </div>
             </div>
           ) : (
@@ -225,7 +314,12 @@ export default function EditItemClient({
           {/* Hidden inputs to persist order (excluding removed) */}
           <div className="hidden">
             {visible.map((m) => (
-              <input key={m.id} type="hidden" name="orderMediaId" value={m.id} />
+              <input
+                key={m.id}
+                type="hidden"
+                name="orderMediaId"
+                value={m.id}
+              />
             ))}
           </div>
         </div>
@@ -235,21 +329,45 @@ export default function EditItemClient({
           <label className="block text-sm mb-1">Upload Storage</label>
           <div className="flex items-center gap-4 text-sm">
             <label className="inline-flex items-center gap-2">
-              <input type="radio" name="photoStorage" value="local" checked={storage === "local"} onChange={() => setStorage("local")} />
+              <input
+                type="radio"
+                name="photoStorage"
+                value="local"
+                checked={storage === "local"}
+                onChange={() => setStorage("local")}
+              />
               <span>Local</span>
             </label>
             <label className="inline-flex items-center gap-2">
-              <input type="radio" name="photoStorage" value="s3" checked={storage === "s3"} disabled={!s3Enabled} onChange={() => setStorage("s3")} />
+              <input
+                type="radio"
+                name="photoStorage"
+                value="s3"
+                checked={storage === "s3"}
+                disabled={!s3Enabled}
+                onChange={() => setStorage("s3")}
+              />
               <span>MinIO (S3)</span>
             </label>
           </div>
-          {!s3Enabled && <p className="text-xs text-gray-500">MinIO not configured; using local uploads.</p>}
+          {!s3Enabled && (
+            <p className="text-xs text-gray-500">
+              MinIO not configured; using local uploads.
+            </p>
+          )}
         </div>
 
         {/* Add new media */}
-        <UploadMedia name="images" label="Add Media" accept="image/*" mode={storage} />
+        <UploadMedia
+          name="images"
+          label="Add Media"
+          accept="image/*"
+          mode={storage}
+        />
 
-        {state.error && <p className="text-sm text-red-600">Error: {state.error}</p>}
+        {state.error && (
+          <p className="text-sm text-red-600">Error: {state.error}</p>
+        )}
 
         <div className="pt-2">
           <SubmitButton />

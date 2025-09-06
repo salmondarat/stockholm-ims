@@ -13,7 +13,9 @@ export default function SolutionDetail({ spec }: { spec: SolutionSpec }) {
   return (
     <main className="max-w-5xl mx-auto px-4 py-14 space-y-10">
       <nav className="text-sm text-muted">
-        <Link href="/solutions" className="hover:underline">Solutions</Link>
+        <Link href="/solutions" className="hover:underline">
+          Solutions
+        </Link>
         <span className="mx-2">/</span>
         <span className="text-foreground">{spec.title}</span>
       </nav>
@@ -30,12 +32,21 @@ export default function SolutionDetail({ spec }: { spec: SolutionSpec }) {
             </ul>
           )}
           <div className="mt-6 inline-flex gap-3">
-            <Link href={`${appUrl}/signup`} className="btn btn-primary">Get started</Link>
-            <Link href={`${appUrl}/login`} className="btn btn-outline">Log in</Link>
+            <Link href={`${appUrl}/signup`} className="btn btn-primary">
+              Get started
+            </Link>
+            <Link href={`${appUrl}/login`} className="btn btn-outline">
+              Log in
+            </Link>
           </div>
         </div>
         <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-subtle bg-card">
-          <SafeImage src={spec.image} alt={spec.title} fill className="object-cover" />
+          <SafeImage
+            src={spec.image}
+            alt={spec.title}
+            fill
+            className="object-cover"
+          />
         </div>
       </header>
     </main>

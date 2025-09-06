@@ -7,7 +7,11 @@ export default function Page() {
         title: "Manufacturing",
         desc: "Track components and finished goods across lines and warehouses.",
         image: "/mock-generic.svg",
-        bullets: ["BOM-level attributes", "Per-line locations", "Barcode/QR labels"],
+        bullets: [
+          "BOM-level attributes",
+          "Per-line locations",
+          "Barcode/QR labels",
+        ],
       }}
     />
   );

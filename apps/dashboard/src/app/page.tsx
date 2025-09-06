@@ -17,17 +17,32 @@ export default async function Home() {
           <span className="font-semibold">Stockholm IMS</span>
         </div>
         <nav className="flex items-center gap-3 text-sm">
-          <Link className="hover:underline" href="#features">Features</Link>
-          <Link className="hover:underline" href="#tech">Tech</Link>
-          <Link className="hover:underline" href="/app">Open App</Link>
+          <Link className="hover:underline" href="#features">
+            Features
+          </Link>
+          <Link className="hover:underline" href="#tech">
+            Tech
+          </Link>
+          <Link className="hover:underline" href="/app">
+            Open App
+          </Link>
           {!session?.user ? (
             <>
-              <Link className="px-3 py-1.5 rounded border" href="/login">Log in</Link>
-              <Link className="px-3 py-1.5 rounded bg-black text-white" href="/signup">Sign up</Link>
+              <Link className="px-3 py-1.5 rounded border" href="/login">
+                Log in
+              </Link>
+              <Link
+                className="px-3 py-1.5 rounded bg-black text-white"
+                href="/signup"
+              >
+                Sign up
+              </Link>
             </>
           ) : (
             <form action={logoutAction}>
-              <button className="px-3 py-1.5 rounded border" type="submit">Log out</button>
+              <button className="px-3 py-1.5 rounded border" type="submit">
+                Log out
+              </button>
             </form>
           )}
         </nav>
@@ -35,19 +50,33 @@ export default async function Home() {
 
       <section className="px-6 py-16 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold tracking-tight">Inventory, simplified.</h1>
+          <h1 className="text-4xl font-bold tracking-tight">
+            Inventory, simplified.
+          </h1>
           <p className="mt-3 text-gray-600 text-lg">
-            Track items, stock levels, and media with a fast, modern dashboard. Built-in barcode scanning, MinIO uploads, and low-stock alerts.
+            Track items, stock levels, and media with a fast, modern dashboard.
+            Built-in barcode scanning, MinIO uploads, and low-stock alerts.
           </p>
           <div className="mt-6 flex items-center gap-3">
-            <Link href="/app" className="px-4 py-2 rounded-md bg-black text-white">Go to App</Link>
+            <Link
+              href="/app"
+              className="px-4 py-2 rounded-md bg-black text-white"
+            >
+              Go to App
+            </Link>
             {!session?.user ? (
               <>
-                <Link href="/signup" className="px-4 py-2 rounded-md border">Create account</Link>
-                <Link href="/login" className="px-4 py-2 rounded-md border">Log in</Link>
+                <Link href="/signup" className="px-4 py-2 rounded-md border">
+                  Create account
+                </Link>
+                <Link href="/login" className="px-4 py-2 rounded-md border">
+                  Log in
+                </Link>
               </>
             ) : (
-              <span className="text-sm text-gray-600">Signed in as {session.user.email}</span>
+              <span className="text-sm text-gray-600">
+                Signed in as {session.user.email}
+              </span>
             )}
           </div>
         </div>
@@ -57,15 +86,24 @@ export default async function Home() {
         <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
           <div className="p-5 border rounded-lg bg-white">
             <h3 className="font-semibold">Item Management</h3>
-            <p className="mt-1 text-sm text-gray-600">Create, edit, tag, and locate items. Track quantity and condition with low-stock thresholds.</p>
+            <p className="mt-1 text-sm text-gray-600">
+              Create, edit, tag, and locate items. Track quantity and condition
+              with low-stock thresholds.
+            </p>
           </div>
           <div className="p-5 border rounded-lg bg-white">
             <h3 className="font-semibold">Media Gallery</h3>
-            <p className="mt-1 text-sm text-gray-600">Attach multiple images per item, pick a cover, reorder, and upload to local or MinIO (S3).</p>
+            <p className="mt-1 text-sm text-gray-600">
+              Attach multiple images per item, pick a cover, reorder, and upload
+              to local or MinIO (S3).
+            </p>
           </div>
           <div className="p-5 border rounded-lg bg-white">
             <h3 className="font-semibold">Barcode & Export</h3>
-            <p className="mt-1 text-sm text-gray-600">Scan barcodes, generate labels, and export inventory reports as PDF.</p>
+            <p className="mt-1 text-sm text-gray-600">
+              Scan barcodes, generate labels, and export inventory reports as
+              PDF.
+            </p>
           </div>
         </div>
       </section>

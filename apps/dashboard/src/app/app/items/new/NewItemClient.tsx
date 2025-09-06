@@ -40,11 +40,14 @@ export default function NewItemClient({
 
   const [showDialog, setShowDialog] = useState(false);
   const [storage, setStorage] = useState<"local" | "s3">(
-    s3Enabled ? "s3" : "local"
+    s3Enabled ? "s3" : "local",
   );
   const [category, setCategory] = useState<string>("");
   const [sku, setSku] = useState<string>(initialSku);
-  const [variantInfo, setVariantInfo] = useState<{ hasVariants: boolean; sumQty: number }>({ hasVariants: false, sumQty: 0 });
+  const [variantInfo, setVariantInfo] = useState<{
+    hasVariants: boolean;
+    sumQty: number;
+  }>({ hasVariants: false, sumQty: 0 });
 
   useEffect(() => {
     if (state.ok) setShowDialog(true);
@@ -105,7 +108,9 @@ export default function NewItemClient({
               readOnly={variantInfo.hasVariants}
             />
             {variantInfo.hasVariants && (
-              <p className="text-xs text-gray-500 mt-1">Derived from variants: {variantInfo.sumQty}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Derived from variants: {variantInfo.sumQty}
+              </p>
             )}
           </div>
           <div>
@@ -174,7 +179,12 @@ export default function NewItemClient({
         <OptionsBuilder baseSku={sku} onSummaryChange={setVariantInfo} />
 
         {/* Upload multiple media (images) */}
-        <UploadMedia name="images" label="Media (images)" accept="image/*" mode={storage} />
+        <UploadMedia
+          name="images"
+          label="Media (images)"
+          accept="image/*"
+          mode={storage}
+        />
 
         {/* Storage target selection: Local vs MinIO (S3) */}
         <div className="space-y-2">

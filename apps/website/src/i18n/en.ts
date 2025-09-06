@@ -57,7 +57,8 @@ const en = {
   },
   solutions: {
     title: "Solutions",
-    subtitle: "Use Stockholm IMS for retail, e‑commerce, or internal IT asset tracking.",
+    subtitle:
+      "Use Stockholm IMS for retail, e‑commerce, or internal IT asset tracking.",
     retail: "Retail",
     retailDesc: "In‑store stock and variants.",
     ecom: "E‑commerce",
@@ -73,9 +74,11 @@ const en = {
   },
   legal: {
     privacyTitle: "Privacy Policy",
-    privacyBody: "We respect your privacy. This is a placeholder page — update with your real policy before launch.",
+    privacyBody:
+      "We respect your privacy. This is a placeholder page — update with your real policy before launch.",
     termsTitle: "Terms of Service",
-    termsBody: "These terms are placeholders for development. Replace with your actual terms before going live.",
+    termsBody:
+      "These terms are placeholders for development. Replace with your actual terms before going live.",
   },
 } as const;
 

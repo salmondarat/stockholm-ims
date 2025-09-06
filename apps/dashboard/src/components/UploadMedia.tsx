@@ -39,7 +39,8 @@ export default function UploadMedia({
 
   useEffect(() => {
     return () => {
-      for (const it of items) if (it.preview.startsWith("blob:")) URL.revokeObjectURL(it.preview);
+      for (const it of items)
+        if (it.preview.startsWith("blob:")) URL.revokeObjectURL(it.preview);
     };
   }, [items]);
 
@@ -75,16 +76,20 @@ export default function UploadMedia({
 
   async function directUpload(file: File, id: string) {
     try {
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status: "uploading", error: undefined } : i)));
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === id ? { ...i, status: "uploading", error: undefined } : i,
+        ),
+      );
       const contentType = file.type || "application/octet-stream";
       const extRaw = (file.name.split(".").pop() || "").toLowerCase();
       const ext = ALLOWED_EXT.has(extRaw)
         ? extRaw
         : contentType === "image/png"
-        ? "png"
-        : contentType === "image/webp"
-        ? "webp"
-        : "jpg";
+          ? "png"
+          : contentType === "image/webp"
+            ? "webp"
+            : "jpg";
       const res = await fetch(presignPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,12 +97,22 @@ export default function UploadMedia({
       });
       if (!res.ok) throw new Error(`Presign failed (${res.status})`);
       const { url, key } = (await res.json()) as { url: string; key: string };
-      const put = await fetch(url, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
+      const put = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": contentType },
+        body: file,
+      });
       if (!put.ok) throw new Error(`Upload failed (${put.status})`);
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status: "uploaded", key } : i)));
+      setItems((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, status: "uploaded", key } : i)),
+      );
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Upload failed";
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status: "error", error: message } : i)));
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === id ? { ...i, status: "error", error: message } : i,
+        ),
+      );
     }
   }
 
@@ -111,7 +126,13 @@ export default function UploadMedia({
         // push error item immediately
         setItems((prev) => [
           ...prev,
-          { id: crypto.randomUUID(), fileName: file.name, preview: "", status: "error", error: err },
+          {
+            id: crypto.randomUUID(),
+            fileName: file.name,
+            preview: "",
+            status: "error",
+            error: err,
+          },
         ]);
         continue;
       }
@@ -122,7 +143,12 @@ export default function UploadMedia({
       // Add the item first so subsequent updates can find it
       setItems((prev) => [
         ...prev,
-        { id, fileName: file.name, preview, status: mode === "s3" ? "uploading" : "idle" },
+        {
+          id,
+          fileName: file.name,
+          preview,
+          status: mode === "s3" ? "uploading" : "idle",
+        },
       ]);
 
       if (mode === "s3") {
@@ -150,7 +176,9 @@ export default function UploadMedia({
       {mode === "s3" &&
         items
           .filter((i) => i.status === "uploaded" && i.key)
-          .map((i) => <input key={i.id} type="hidden" name="mediaKey" value={i.key} />)}
+          .map((i) => (
+            <input key={i.id} type="hidden" name="mediaKey" value={i.key} />
+          ))}
 
       <input
         id={inputId}
@@ -165,10 +193,16 @@ export default function UploadMedia({
       />
 
       <div className="flex items-center gap-2">
-        <button type="button" onClick={onPick} className="px-3 py-2 rounded-md border hover:bg-gray-50">
+        <button
+          type="button"
+          onClick={onPick}
+          className="px-3 py-2 rounded-md border hover:bg-gray-50"
+        >
           Add Media
         </button>
-        <span className="text-xs text-gray-500">Max 8 MB each. JPG/PNG/WEBP only.</span>
+        <span className="text-xs text-gray-500">
+          Max 8 MB each. JPG/PNG/WEBP only.
+        </span>
       </div>
 
       {!!items.length && (
@@ -177,20 +211,40 @@ export default function UploadMedia({
             <div key={it.id} className="relative border rounded-md p-2">
               {it.preview ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={it.preview} alt={it.fileName} className="h-24 w-full object-cover rounded" />
+                <img
+                  src={it.preview}
+                  alt={it.fileName}
+                  className="h-24 w-full object-cover rounded"
+                />
               ) : (
-                <div className="h-24 w-full grid place-items-center text-xs text-gray-500">{it.fileName}</div>
+                <div className="h-24 w-full grid place-items-center text-xs text-gray-500">
+                  {it.fileName}
+                </div>
               )}
               <div className="mt-1 flex items-center justify-between text-[10px] text-gray-600">
                 <span className="truncate max-w-[8rem]" title={it.fileName}>
                   {it.fileName}
                 </span>
-                {it.status === "uploading" && <span className="text-blue-600">uploading…</span>}
-                {it.status === "uploaded" && <span className="text-green-600">ok</span>}
-                {it.status === "error" && <span className="text-red-600">error</span>}
+                {it.status === "uploading" && (
+                  <span className="text-blue-600">uploading…</span>
+                )}
+                {it.status === "uploaded" && (
+                  <span className="text-green-600">ok</span>
+                )}
+                {it.status === "error" && (
+                  <span className="text-red-600">error</span>
+                )}
               </div>
-              {it.error && <div className="text-[10px] text-red-600 mt-0.5">{it.error}</div>}
-              <button type="button" className="absolute top-1 right-1 text-xs px-1.5 py-0.5 border rounded bg-white" onClick={() => removeItem(it.id)}>
+              {it.error && (
+                <div className="text-[10px] text-red-600 mt-0.5">
+                  {it.error}
+                </div>
+              )}
+              <button
+                type="button"
+                className="absolute top-1 right-1 text-xs px-1.5 py-0.5 border rounded bg-white"
+                onClick={() => removeItem(it.id)}
+              >
                 Remove
               </button>
             </div>

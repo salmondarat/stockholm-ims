@@ -15,6 +15,6 @@ export async function GET() {
     { ok: true, count, ts: new Date().toISOString() },
     {
       headers: { "Cache-Control": "no-store" },
-    }
+    },
   );
 }

@@ -13,8 +13,14 @@ function slugify(s: string) {
 
 import type { PrismaClient } from "@prisma/client";
 
-async function upsertCategory(db: PrismaClient, name: string, parentId: string | null = null) {
-  const slug = parentId ? `${slugify(name)}-${parentId.slice(0, 6)}` : slugify(name);
+async function upsertCategory(
+  db: PrismaClient,
+  name: string,
+  parentId: string | null = null,
+) {
+  const slug = parentId
+    ? `${slugify(name)}-${parentId.slice(0, 6)}`
+    : slugify(name);
   const cat = await db.category.upsert({
     where: { slug },
     update: { name, parentId },

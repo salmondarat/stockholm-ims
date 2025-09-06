@@ -36,10 +36,16 @@ export async function POST(req: Request) {
     const { contentType, ext } = BodySchema.parse(json);
 
     if (!ALLOWED_MIME.has(contentType)) {
-      return NextResponse.json({ error: "Unsupported media type" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Unsupported media type" },
+        { status: 400 },
+      );
     }
     if (!ALLOWED_EXT.has(ext.toLowerCase())) {
-      return NextResponse.json({ error: "Unsupported file extension" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Unsupported file extension" },
+        { status: 400 },
+      );
     }
 
     // generate unique key (mis: uploads/2025/08/uuid.ext)
@@ -69,9 +75,6 @@ export async function POST(req: Request) {
   } catch (err: unknown) {
     console.error(err);
     const message = err instanceof Error ? err.message : "Bad Request";
-    return NextResponse.json(
-      { error: message },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }

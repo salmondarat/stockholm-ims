@@ -21,8 +21,14 @@ export default async function Page({
     process.env.S3_ENDPOINT &&
       process.env.S3_BUCKET &&
       process.env.S3_ACCESS_KEY_ID &&
-      process.env.S3_SECRET_ACCESS_KEY
+      process.env.S3_SECRET_ACCESS_KEY,
   );
 
-  return <NewItemClient initialSku={initialSku} s3Enabled={s3Enabled} categories={categories} />;
+  return (
+    <NewItemClient
+      initialSku={initialSku}
+      s3Enabled={s3Enabled}
+      categories={categories}
+    />
+  );
 }

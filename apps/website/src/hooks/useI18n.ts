@@ -29,7 +29,11 @@ export default function useI18n() {
       if (l && l !== lang) setLang(l);
     };
     window.addEventListener("prefs:locale-currency", onPrefs as EventListener);
-    return () => window.removeEventListener("prefs:locale-currency", onPrefs as EventListener);
+    return () =>
+      window.removeEventListener(
+        "prefs:locale-currency",
+        onPrefs as EventListener,
+      );
   }, [lang]);
 
   return { lang, dict } as const;

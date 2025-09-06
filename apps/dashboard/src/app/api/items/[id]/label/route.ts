@@ -15,7 +15,12 @@ async function generateQrPng(text: string, size = 200) {
   });
 }
 
-async function generateBarcodePng(text: string, width = 300, height = 70, includeText = true) {
+async function generateBarcodePng(
+  text: string,
+  width = 300,
+  height = 70,
+  includeText = true,
+) {
   const bwipjs = (await import("bwip-js")).default as unknown as {
     toBuffer: (opts: Record<string, unknown>) => Promise<Buffer>;
   };
@@ -33,7 +38,7 @@ async function generateBarcodePng(text: string, width = 300, height = 70, includ
 
 export async function GET(
   _req: NextRequest,
-  ctx: { params: Promise<{ id: string }> }
+  ctx: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
   if (!session?.user?.email) {
@@ -90,11 +95,21 @@ export async function GET(
     textY -= 14;
   }
   if (item.location) {
-    page.drawText(`Loc: ${item.location}`, { x: textX, y: textY, size: 11, font });
+    page.drawText(`Loc: ${item.location}`, {
+      x: textX,
+      y: textY,
+      size: 11,
+      font,
+    });
     textY -= 14;
   }
   if (item.condition) {
-    page.drawText(`Cond: ${item.condition}`, { x: textX, y: textY, size: 11, font });
+    page.drawText(`Cond: ${item.condition}`, {
+      x: textX,
+      y: textY,
+      size: 11,
+      font,
+    });
     textY -= 14;
   }
 

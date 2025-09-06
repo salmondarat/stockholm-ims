@@ -12,7 +12,9 @@ export default function ScanPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>();
+  const [selectedDeviceId, setSelectedDeviceId] = useState<
+    string | undefined
+  >();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -47,7 +49,7 @@ export default function ScanPage() {
             if (err && !(err instanceof NotFoundException)) {
               setError(String(err));
             }
-          }
+          },
         );
       } catch (e) {
         setIsScanning(false);
@@ -84,7 +86,7 @@ export default function ScanPage() {
           if (err && !(err instanceof NotFoundException)) {
             setError(String(err));
           }
-        }
+        },
       );
     } catch (e) {
       setIsScanning(false);
@@ -177,4 +179,3 @@ export default function ScanPage() {
     </div>
   );
 }
-

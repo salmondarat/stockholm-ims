@@ -18,20 +18,34 @@ export default function Home() {
       <section className="hero">
         <div className="max-w-6xl mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
           <div>
-            <div className="chip text-[--foreground]/80">Modern inventory platform</div>
+            <div className="chip text-[--foreground]/80">
+              Modern inventory platform
+            </div>
             <h1 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight">
               {dict.home.heroTitle}
             </h1>
             <p className="mt-4 text-muted text-lg">{dict.home.heroSubtitle}</p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Link href={`${appUrl}/signup`} className="btn btn-cta btn-pill">{dict.home.ctaTry}</Link>
-              <Link href={`${appUrl}/login`} className="btn btn-outline">{dict.home.ctaLogin}</Link>
-              <Link href={`${appUrl}/app`} className="btn btn-outline">{dict.home.ctaOpen}</Link>
+              <Link href={`${appUrl}/signup`} className="btn btn-cta btn-pill">
+                {dict.home.ctaTry}
+              </Link>
+              <Link href={`${appUrl}/login`} className="btn btn-outline">
+                {dict.home.ctaLogin}
+              </Link>
+              <Link href={`${appUrl}/app`} className="btn btn-outline">
+                {dict.home.ctaOpen}
+              </Link>
             </div>
             <p className="mt-3 text-xs text-muted">No credit card required.</p>
           </div>
           <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-subtle shadow-sm">
-            <Image src={heroImage} alt="App screenshot" fill className="object-cover" priority />
+            <Image
+              src={heroImage}
+              alt="App screenshot"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
         </div>
       </section>
@@ -39,7 +53,9 @@ export default function Home() {
       {/* Logos / social proof */}
       <section className="py-10">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center text-muted text-sm">{dict.home.trusted}</div>
+          <div className="text-center text-muted text-sm">
+            {dict.home.trusted}
+          </div>
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
             {[
               { name: "Stripe", src: "/logos/partners/stripe.svg" },
@@ -49,7 +65,10 @@ export default function Home() {
               { name: "Next.js", src: "/logos/partners/nextjs.svg" },
               { name: "Vercel", src: "/logos/partners/vercel.svg" },
             ].map((logo) => (
-              <div key={logo.name} className="logo-tile h-10 rounded border border-subtle bg-white flex items-center justify-center">
+              <div
+                key={logo.name}
+                className="logo-tile h-10 rounded border border-subtle bg-white flex items-center justify-center"
+              >
                 <Image
                   src={logo.src}
                   alt={`${logo.name} logo`}
@@ -67,7 +86,12 @@ export default function Home() {
       <section className="py-16 border-t border-subtle">
         <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
           <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-subtle">
-            <Image src="/mock-scan.svg" alt="Scanning barcode" fill className="object-cover" />
+            <Image
+              src="/mock-scan.svg"
+              alt="Scanning barcode"
+              fill
+              className="object-cover"
+            />
           </div>
           <div>
             <h2 className="text-2xl font-semibold">{dict.home.scanTitle}</h2>
@@ -88,20 +112,84 @@ export default function Home() {
           <div className="mt-6 overflow-x-auto">
             <div className="flex gap-4 min-w-max">
               {[
-                { title: "Inventory Management", desc: "In‑store stock and variants.", href: "/solutions/inventory-management", img: "/mock-generic.svg" },
-                { title: "Supplies Tracking", desc: "Consumables and materials.", href: "/solutions/supplies", img: "/mock-media.svg" },
-                { title: "Asset Tracking", desc: "Devices, labels, locations.", href: "/solutions/assets", img: "/mock-generic.svg" },
-                { title: "Construction", desc: "Job sites & equipment.", href: "/solutions/construction", img: "/mock-generic.svg" },
-                { title: "Electrical", desc: "Supplies & tools.", href: "/solutions/electrical", img: "/mock-generic.svg" },
-                { title: "Medical", desc: "Supplies & equipment.", href: "/solutions/medical", img: "/mock-media.svg" },
-                { title: "Design", desc: "Projects & materials.", href: "/solutions/design", img: "/mock-media.svg" },
-                { title: "Warehouse", desc: "Receiving & picking.", href: "/solutions/warehouse", img: "/mock-generic.svg" },
-                { title: "Education", desc: "Classroom inventory.", href: "/solutions/education", img: "/mock-media.svg" },
-                { title: "Field Teams", desc: "Kits & tools on the go.", href: "/solutions/field", img: "/mock-generic.svg" },
-                { title: "Manufacturing", desc: "Components & finished goods.", href: "/solutions/manufacturing", img: "/mock-generic.svg" },
-                { title: "Nonprofit", desc: "Donations & event kits.", href: "/solutions/nonprofit", img: "/mock-media.svg" },
+                {
+                  title: "Inventory Management",
+                  desc: "In‑store stock and variants.",
+                  href: "/solutions/inventory-management",
+                  img: "/mock-generic.svg",
+                },
+                {
+                  title: "Supplies Tracking",
+                  desc: "Consumables and materials.",
+                  href: "/solutions/supplies",
+                  img: "/mock-media.svg",
+                },
+                {
+                  title: "Asset Tracking",
+                  desc: "Devices, labels, locations.",
+                  href: "/solutions/assets",
+                  img: "/mock-generic.svg",
+                },
+                {
+                  title: "Construction",
+                  desc: "Job sites & equipment.",
+                  href: "/solutions/construction",
+                  img: "/mock-generic.svg",
+                },
+                {
+                  title: "Electrical",
+                  desc: "Supplies & tools.",
+                  href: "/solutions/electrical",
+                  img: "/mock-generic.svg",
+                },
+                {
+                  title: "Medical",
+                  desc: "Supplies & equipment.",
+                  href: "/solutions/medical",
+                  img: "/mock-media.svg",
+                },
+                {
+                  title: "Design",
+                  desc: "Projects & materials.",
+                  href: "/solutions/design",
+                  img: "/mock-media.svg",
+                },
+                {
+                  title: "Warehouse",
+                  desc: "Receiving & picking.",
+                  href: "/solutions/warehouse",
+                  img: "/mock-generic.svg",
+                },
+                {
+                  title: "Education",
+                  desc: "Classroom inventory.",
+                  href: "/solutions/education",
+                  img: "/mock-media.svg",
+                },
+                {
+                  title: "Field Teams",
+                  desc: "Kits & tools on the go.",
+                  href: "/solutions/field",
+                  img: "/mock-generic.svg",
+                },
+                {
+                  title: "Manufacturing",
+                  desc: "Components & finished goods.",
+                  href: "/solutions/manufacturing",
+                  img: "/mock-generic.svg",
+                },
+                {
+                  title: "Nonprofit",
+                  desc: "Donations & event kits.",
+                  href: "/solutions/nonprofit",
+                  img: "/mock-media.svg",
+                },
               ].map((c) => (
-                <Link key={c.title} href={c.href} className="w-72 shrink-0 rounded-xl border border-subtle bg-card overflow-hidden">
+                <Link
+                  key={c.title}
+                  href={c.href}
+                  className="w-72 shrink-0 rounded-xl border border-subtle bg-card overflow-hidden"
+                >
                   <div className="relative h-36 w-full">
                     <Image src={c.img} alt="" fill className="object-cover" />
                   </div>
@@ -122,12 +210,21 @@ export default function Home() {
             <h2 className="text-2xl font-semibold">{dict.home.mediaTitle}</h2>
             <p className="mt-2 text-muted">{dict.home.mediaBody}</p>
             <div className="mt-6 flex items-center gap-3">
-              <Link href="/features" className="btn btn-outline">{dict.home.exploreFeatures}</Link>
-              <Link href="/pricing" className="btn btn-primary">{dict.home.seePricing}</Link>
+              <Link href="/features" className="btn btn-outline">
+                {dict.home.exploreFeatures}
+              </Link>
+              <Link href="/pricing" className="btn btn-primary">
+                {dict.home.seePricing}
+              </Link>
             </div>
           </div>
           <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-subtle">
-            <Image src="/mock-media.svg" alt="Team collaboration" fill className="object-cover" />
+            <Image
+              src="/mock-media.svg"
+              alt="Team collaboration"
+              fill
+              className="object-cover"
+            />
           </div>
         </div>
       </section>
@@ -138,8 +235,12 @@ export default function Home() {
           <h3 className="text-2xl font-semibold">{dict.home.startInMinutes}</h3>
           <p className="mt-2 text-muted">{dict.home.startInMinutesBody}</p>
           <div className="mt-6 flex items-center justify-center gap-3">
-            <Link href={`${appUrl}/signup`} className="btn btn-primary">{dict.features.ctaCreate}</Link>
-            <Link href={`${appUrl}/login`} className="btn btn-outline">{dict.features.ctaLogin}</Link>
+            <Link href={`${appUrl}/signup`} className="btn btn-primary">
+              {dict.features.ctaCreate}
+            </Link>
+            <Link href={`${appUrl}/login`} className="btn btn-outline">
+              {dict.features.ctaLogin}
+            </Link>
           </div>
         </div>
       </section>
@@ -160,7 +261,10 @@ export default function Home() {
             { k: "<5m", v: "To first import" },
             { k: "99.9%", v: "Uptime" },
           ].map((x) => (
-            <div key={x.v} className="rounded-xl border border-subtle bg-card p-6">
+            <div
+              key={x.v}
+              className="rounded-xl border border-subtle bg-card p-6"
+            >
               <div className="text-3xl font-semibold">{x.k}</div>
               <div className="text-sm text-muted mt-1">{x.v}</div>
             </div>
@@ -171,17 +275,38 @@ export default function Home() {
       {/* Feature grid */}
       <section className="py-16 border-t border-subtle">
         <div className="max-w-6xl mx-auto px-4">
-          <h3 className="text-2xl font-semibold text-center">Why teams choose Stockholm IMS</h3>
+          <h3 className="text-2xl font-semibold text-center">
+            Why teams choose Stockholm IMS
+          </h3>
           <div className="mt-8 grid md:grid-cols-3 gap-6">
-            {[ 
-              { t: "Fast", d: "Instant navigation built on Next.js.", I: Boxes },
-              { t: "Accurate", d: "Variant‑level stock with SKU safety.", I: Barcode },
-              { t: "Portable", d: "Scan with your phone — no hardware.", I: Camera },
+            {[
+              {
+                t: "Fast",
+                d: "Instant navigation built on Next.js.",
+                I: Boxes,
+              },
+              {
+                t: "Accurate",
+                d: "Variant‑level stock with SKU safety.",
+                I: Barcode,
+              },
+              {
+                t: "Portable",
+                d: "Scan with your phone — no hardware.",
+                I: Camera,
+              },
               { t: "Flexible", d: "Local uploads or S3/MinIO.", I: Cloud },
-              { t: "Exportable", d: "Clean PDF exports any time.", I: FileText },
+              {
+                t: "Exportable",
+                d: "Clean PDF exports any time.",
+                I: FileText,
+              },
               { t: "Secure", d: "Modern auth and best practices.", I: Shield },
             ].map(({ t, d, I }) => (
-              <div key={t} className="rounded-xl border border-subtle bg-card p-5">
+              <div
+                key={t}
+                className="rounded-xl border border-subtle bg-card p-5"
+              >
                 <div className="flex items-center gap-2">
                   <I className="h-4 w-4 text-[--primary]" />
                   <div className="font-medium">{t}</div>
@@ -196,7 +321,9 @@ export default function Home() {
       {/* Testimonials carousel */}
       <section className="py-16 border-t border-subtle">
         <div className="max-w-6xl mx-auto px-4">
-          <h3 className="text-2xl font-semibold text-center">Loved by practical teams</h3>
+          <h3 className="text-2xl font-semibold text-center">
+            Loved by practical teams
+          </h3>
           <div className="mt-8">
             <TestimonialCarousel />
           </div>
@@ -222,7 +349,10 @@ export default function Home() {
                 a: "Choose local storage or configure S3/MinIO in settings.",
               },
             ].map((f) => (
-              <div key={f.q} className="rounded-xl border border-subtle bg-card p-5">
+              <div
+                key={f.q}
+                className="rounded-xl border border-subtle bg-card p-5"
+              >
                 <div className="font-medium">{f.q}</div>
                 <div className="text-sm text-muted mt-1">{f.a}</div>
               </div>

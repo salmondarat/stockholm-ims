@@ -33,7 +33,8 @@ const id = {
   },
   features: {
     title: "Fitur",
-    subtitle: "Semua yang Anda butuhkan untuk melacak inventaris per item dan varian.",
+    subtitle:
+      "Semua yang Anda butuhkan untuk melacak inventaris per item dan varian.",
     variantTitle: "Manajemen varian",
     variantBody:
       "Tentukan atribut seperti Ukuran atau Warna, buat SKU otomatis, dan lacak kuantitas per varian.",
@@ -56,7 +57,8 @@ const id = {
   },
   solutions: {
     title: "Solusi",
-    subtitle: "Gunakan Stockholm IMS untuk ritel, e‑commerce, atau aset TI internal.",
+    subtitle:
+      "Gunakan Stockholm IMS untuk ritel, e‑commerce, atau aset TI internal.",
     retail: "Ritel",
     retailDesc: "Stok toko dan varian.",
     ecom: "E‑commerce",
@@ -72,9 +74,11 @@ const id = {
   },
   legal: {
     privacyTitle: "Kebijakan Privasi",
-    privacyBody: "Kami menghormati privasi Anda. Halaman ini sementara — ganti dengan kebijakan resmi Anda.",
+    privacyBody:
+      "Kami menghormati privasi Anda. Halaman ini sementara — ganti dengan kebijakan resmi Anda.",
     termsTitle: "Syarat Layanan",
-    termsBody: "Syarat ini bersifat sementara untuk pengembangan. Ganti dengan syarat resmi sebelum rilis.",
+    termsBody:
+      "Syarat ini bersifat sementara untuk pengembangan. Ganti dengan syarat resmi sebelum rilis.",
   },
 } as const;
 

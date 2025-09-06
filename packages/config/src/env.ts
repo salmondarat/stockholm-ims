@@ -6,7 +6,7 @@ import { z } from "zod";
 // walau fitur terkait (mis. S3/cron) tidak digunakan.
 const ServerEnvSchema = z.object({
   NODE_ENV: z
-    .enum(["development", "test", "production"]) 
+    .enum(["development", "test", "production"])
     .default("development"),
   DATABASE_URL: z.string().url(),
   NEXTAUTH_SECRET: z.string().min(16),
@@ -34,7 +34,7 @@ function readEnv(): ServerEnv {
     // cetak error agar build gagal cepat
     console.error(
       "❌ Invalid environment variables:",
-      parsed.error.flatten().fieldErrors
+      parsed.error.flatten().fieldErrors,
     );
     throw new Error("Invalid environment variables");
   }

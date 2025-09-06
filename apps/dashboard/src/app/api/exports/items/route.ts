@@ -26,7 +26,11 @@ export async function GET() {
     lowStockThreshold: number | null;
     category?: { name: string } | null;
     options?: unknown;
-    variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
+    variants: Array<{
+      attrs: Record<string, string>;
+      qty: number;
+      sku?: string;
+    }>;
   }> = [];
   try {
     const rows = await db.item.findMany({
@@ -45,11 +49,24 @@ export async function GET() {
       condition: r.condition,
       photoUrl: r.photoUrl,
       tags: r.tags,
-      price: (r as unknown as { price?: unknown }).price == null ? null : Number((r as unknown as { price?: unknown }).price as unknown),
-      lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
+      price:
+        (r as unknown as { price?: unknown }).price == null
+          ? null
+          : Number((r as unknown as { price?: unknown }).price as unknown),
+      lowStockThreshold:
+        (r as unknown as { lowStockThreshold: number | null })
+          .lowStockThreshold ?? 0,
       category: r.category as { name: string } | null,
       options: (r as unknown as { options: unknown }).options,
-      variants: (r as unknown as { variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }> }).variants,
+      variants: (
+        r as unknown as {
+          variants: Array<{
+            attrs: Record<string, string>;
+            qty: number;
+            sku?: string;
+          }>;
+        }
+      ).variants,
     }));
   } catch {
     const rows = await db.item.findMany({
@@ -65,8 +82,13 @@ export async function GET() {
       condition: r.condition,
       photoUrl: r.photoUrl,
       tags: r.tags,
-      price: (r as unknown as { price?: unknown }).price == null ? null : Number((r as unknown as { price?: unknown }).price as unknown),
-      lowStockThreshold: (r as unknown as { lowStockThreshold: number | null }).lowStockThreshold ?? 0,
+      price:
+        (r as unknown as { price?: unknown }).price == null
+          ? null
+          : Number((r as unknown as { price?: unknown }).price as unknown),
+      lowStockThreshold:
+        (r as unknown as { lowStockThreshold: number | null })
+          .lowStockThreshold ?? 0,
       category: r.category as { name: string } | null,
       options: (r as unknown as { options: unknown }).options,
       variants: listVariantQuantities(r.options),
@@ -74,7 +96,8 @@ export async function GET() {
   }
   const lowStock = data.filter(
     (x) =>
-      (x.lowStockThreshold ?? 0) > 0 && x.quantity <= (x.lowStockThreshold ?? 0)
+      (x.lowStockThreshold ?? 0) > 0 &&
+      x.quantity <= (x.lowStockThreshold ?? 0),
   );
 
   // 2) Siapkan dokumen PDF (A4)
@@ -174,7 +197,11 @@ export async function GET() {
     condition?: string | null;
     price?: number | null;
     options?: unknown;
-    variants: Array<{ attrs: Record<string, string>; qty: number; sku?: string }>;
+    variants: Array<{
+      attrs: Record<string, string>;
+      qty: number;
+      sku?: string;
+    }>;
   };
 
   const drawRow = (row: ItemRow) => {
@@ -182,10 +209,26 @@ export async function GET() {
     page.drawText(text(row.name), { x: colX[0], y, size: 10, font });
     page.drawText(text(row.sku), { x: colX[1], y, size: 10, font });
     page.drawText(text(row.category?.name), { x: colX[2], y, size: 10, font });
-    const qty = row.variants.reduce((acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0), 0) || row.quantity || 0;
+    const qty =
+      row.variants.reduce(
+        (acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0),
+        0,
+      ) ||
+      row.quantity ||
+      0;
     page.drawText(String(qty), { x: colX[3], y, size: 10, font });
-    page.drawText(`$${Number(row.price ?? 0).toFixed(2)}`, { x: colX[4], y, size: 10, font });
-    page.drawText(summarizeOptions(row.options, 40), { x: colX[5], y, size: 9, font });
+    page.drawText(`$${Number(row.price ?? 0).toFixed(2)}`, {
+      x: colX[4],
+      y,
+      size: 10,
+      font,
+    });
+    page.drawText(summarizeOptions(row.options, 40), {
+      x: colX[5],
+      y,
+      size: 9,
+      font,
+    });
     page.drawText(text(row.location), { x: colX[6], y, size: 10, font });
     page.drawText(text(row.condition), { x: colX[7], y, size: 10, font });
 

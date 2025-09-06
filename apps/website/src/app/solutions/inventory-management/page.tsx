@@ -7,7 +7,11 @@ export default function Page() {
         title: "Inventory Management",
         desc: "Organize items, variants, and counts with categories, tags, and locations.",
         image: "/mock-generic.svg",
-        bullets: ["Variant attributes and SKUs", "Low‑stock thresholds", "Flexible media uploads"],
+        bullets: [
+          "Variant attributes and SKUs",
+          "Low‑stock thresholds",
+          "Flexible media uploads",
+        ],
       }}
     />
   );
