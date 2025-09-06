@@ -183,27 +183,33 @@ export default function PricingPage() {
         {displayPlans.map((p) => (
           <div
             key={p.name}
-            className={`rounded-xl border p-6 bg-card flex flex-col ${p.popular ? "border-[--primary] shadow-[0_0_0_3px_rgba(239,68,68,0.12)] scale-[1.02]" : "border-subtle"}`}
+            className={`relative rounded-xl border p-6 bg-card flex flex-col ${p.popular ? "border-[--primary] shadow-[0_0_0_3px_rgba(239,68,68,0.12)] scale-[1.02]" : "border-subtle"}`}
           >
             {p.popular && (
-              <div className="-mx-6 -mt-6 mb-4 rounded-t-xl bg-red-500 text-white text-xs text-center py-1 font-medium">
+              <div className="absolute -top-4 left-6 right-6 rounded-md bg-red-500 text-white text-xs text-center py-1 font-medium shadow">
                 Most Popular
               </div>
             )}
-            <div className="text-lg font-semibold">{p.name}</div>
-            <p className="mt-1 text-sm text-muted">{p.desc}</p>
-            <div className="mt-3 text-3xl font-bold">
-              {typeof p.price === "number"
-                ? p.price === 0
-                  ? "$0"
-                  : formatMoney(p.price, currency)
-                : "Get a Quote"}
+            {/* Title */}
+            <div className="text-lg font-semibold min-h-[24px]">{p.name}</div>
+            {/* Description */}
+            <p className="mt-1 text-sm text-muted min-h-[56px]">{p.desc}</p>
+            {/* Price row */}
+            <div className="mt-3 min-h-[44px] flex items-end gap-1">
+              <div className="text-3xl font-bold">
+                {typeof p.price === "number"
+                  ? p.price === 0
+                    ? "$0"
+                    : formatMoney(p.price, currency)
+                  : "Get a Quote"}
+              </div>
               {typeof p.price === "number" && p.price > 0 && (
                 <span className="text-base font-normal text-muted">/mo.</span>
               )}
             </div>
-            {typeof p.monthly === "number" && p.monthly > 0 && (
-              <div className="mt-1 text-xs">
+            {/* Savings hint (fixed height) */}
+            <div className="mt-1 h-[20px] text-xs">
+              {typeof p.monthly === "number" && p.monthly > 0 ? (
                 <button
                   className="underline text-red-600"
                   type="button"
@@ -216,17 +222,19 @@ export default function PricingPage() {
                 >
                   switch to yearly to save ~20%
                 </button>
-              </div>
-            )}
-            <div className="mt-4">
+              ) : null}
+            </div>
+            {/* CTA (fixed height) */}
+            <div className="mt-4 h-[40px]">
               <Link
                 href={p.quote ? "/contact" : `${appUrl}/signup`}
-                className={`btn w-full text-center ${p.quote ? "btn-outline" : "btn-primary"}`}
+                className={`btn w-full h-full text-center ${p.quote ? "btn-outline" : "btn-primary"}`}
               >
                 {p.cta}
               </Link>
             </div>
             <hr className="my-5 border-subtle" />
+            {/* Features start aligned */}
             <ul className="text-sm space-y-2 flex-1">
               {p.highlights?.map((h: string) => (
                 <li key={h}>{h}</li>
