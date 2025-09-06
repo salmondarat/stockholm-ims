@@ -11,6 +11,13 @@ import {
   Bell,
   BarChart3,
   ChevronDown,
+  LayoutDashboard,
+  Package,
+  Wrench,
+  Factory,
+  Activity,
+  Boxes,
+  GraduationCap,
 } from "lucide-react";
 
 export default function MobileNav() {
@@ -65,15 +72,57 @@ export default function MobileNav() {
             />
           </Collapsible>
           <Collapsible label={dict?.solutions?.title ?? "Solutions"}>
-            <NavLink href="/solutions" onClick={() => setOpen(false)}>
-              Retail
-            </NavLink>
-            <NavLink href="/solutions" onClick={() => setOpen(false)}>
-              E‑commerce
-            </NavLink>
-            <NavLink href="/solutions" onClick={() => setOpen(false)}>
-              IT Assets
-            </NavLink>
+            <div className="px-1 text-[10px] uppercase tracking-wide text-gray-500">
+              Use cases
+            </div>
+            <MegaLink
+              href="/solutions/inventory-management"
+              icon={<LayoutDashboard className="icon" />}
+              title="Inventory Management"
+            />
+            <MegaLink
+              href="/solutions/supplies"
+              icon={<Package className="icon" />}
+              title="Supplies Tracking"
+            />
+            <MegaLink
+              href="/solutions/assets"
+              icon={<Wrench className="icon" />}
+              title="Asset Tracking"
+            />
+            <div className="px-1 pt-1 text-[10px] uppercase tracking-wide text-gray-500">
+              Industries
+            </div>
+            <MegaLink
+              href="/solutions/construction"
+              icon={<Factory className="icon" />}
+              title="Construction"
+            />
+            <MegaLink
+              href="/solutions/electrical"
+              icon={<Plug className="icon" />}
+              title="Electrical"
+            />
+            <MegaLink
+              href="/solutions/medical"
+              icon={<Activity className="icon" />}
+              title="Medical"
+            />
+            <MegaLink
+              href="/solutions/design"
+              icon={<LayoutDashboard className="icon" />}
+              title="Interior Design"
+            />
+            <MegaLink
+              href="/solutions/warehouse"
+              icon={<Boxes className="icon" />}
+              title="Warehouse"
+            />
+            <MegaLink
+              href="/solutions/education"
+              icon={<GraduationCap className="icon" />}
+              title="Education"
+            />
           </Collapsible>
           <NavLink href="/pricing" onClick={() => setOpen(false)}>
             {dict.pricing.title}

@@ -10,6 +10,7 @@ const DEMO_REPLY =
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -19,6 +20,26 @@ export default function ChatWidget() {
     scrollRef.current?.scrollTo({ top: 999999 });
   }, [msgs, open]);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    const onClick = (e: MouseEvent) => {
+      if (!panelRef.current) return;
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      window.addEventListener("keydown", onKey);
+      window.addEventListener("mousedown", onClick);
+    }
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("mousedown", onClick);
+    };
+  }, [open]);
+
   const send = async () => {
     const text = input.trim();
     if (!text) return;
@@ -26,7 +47,7 @@ export default function ChatWidget() {
     setMsgs((m) => [...m, { role: "user", content: text }]);
     setLoading(true);
     try {
-      const endpoint = process.env.NEXT_PUBLIC_CHAT_WEBHOOK;
+      const endpoint = process.env.NEXT_PUBLIC_CHAT_WEBHOOK || "/api/ai/demo";
       if (endpoint) {
         const res = await fetch(endpoint, {
           method: "POST",
@@ -60,7 +81,10 @@ export default function ChatWidget() {
   return (
     <div className="fixed bottom-5 right-5 z-50">
       {open ? (
-        <div className="w-[320px] md:w-[360px] h-[420px] rounded-xl border border-subtle bg-white text-gray-900 shadow-2xl flex flex-col overflow-hidden">
+        <div
+          ref={panelRef}
+          className="w-[320px] md:w-[360px] h-[420px] rounded-xl border border-subtle bg-white text-gray-900 shadow-2xl flex flex-col overflow-hidden"
+        >
           <div className="px-3 py-2 border-b flex items-center justify-between bg-gray-50">
             <div className="font-medium text-sm">Chat with us</div>
             <button

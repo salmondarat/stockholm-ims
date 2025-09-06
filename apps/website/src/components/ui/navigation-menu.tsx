@@ -38,17 +38,15 @@ export default function NavigationMenu() {
                 <div className="text-sm uppercase tracking-wide text-gray-500">
                   Overview
                 </div>
-                <div className="mt-2 text-2xl font-semibold">
+                <Link
+                  href="/features"
+                  className="mt-2 block text-2xl font-semibold hover:text-[--primary]"
+                >
                   {dict.features.title} <span className="inline-block">→</span>
-                </div>
+                </Link>
                 <p className="mt-2 text-sm text-gray-600">
                   {dict.features.subtitle}
                 </p>
-                <div className="mt-4">
-                  <Link href="/features" className="btn btn-outline text-sm">
-                    Features →
-                  </Link>
-                </div>
               </div>
 
               <div className="space-y-4">
@@ -104,29 +102,27 @@ export default function NavigationMenu() {
             <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:rotate-180 group-data-[state=open]:rotate-180" />
           </Nav.Trigger>
           <Nav.Content className="absolute left-0 right-0 top-full mt-0 rounded-2xl border bg-white text-gray-900 shadow-2xl">
-            <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-3 gap-8">
+            <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-[280px_repeat(2,minmax(0,1fr))] gap-8">
               {/* Overview */}
               <div>
                 <div className="text-sm uppercase tracking-wide text-gray-500">
                   {dict?.solutions?.title ?? "Solutions"}
                 </div>
-                <div className="mt-2 text-2xl font-semibold">
+                <Link
+                  href="/solutions"
+                  className="mt-2 block text-2xl font-semibold hover:text-[--primary]"
+                >
                   {dict?.solutions?.title ?? "Solutions"}{" "}
                   <span className="inline-block">→</span>
-                </div>
+                </Link>
                 <p className="mt-2 text-sm text-gray-600">
                   {dict?.solutions?.subtitle ??
                     "No matter what you need to track, Stockholm has you covered."}
                 </p>
-                <div className="mt-4">
-                  <Link href="/solutions" className="btn btn-outline text-sm">
-                    Solutions →
-                  </Link>
-                </div>
               </div>
 
               {/* Use Cases */}
-              <div className="space-y-4">
+              <div className="space-y-4 min-w-0">
                 <div className="text-xs uppercase tracking-wide text-gray-500">
                   Use cases
                 </div>
@@ -151,7 +147,7 @@ export default function NavigationMenu() {
               </div>
 
               {/* Industries */}
-              <div className="space-y-4">
+              <div className="space-y-4 min-w-0">
                 <div className="text-xs uppercase tracking-wide text-gray-500">
                   Industries
                 </div>

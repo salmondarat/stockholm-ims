@@ -68,6 +68,44 @@ export default function Home() {
             <p className="mt-2 text-muted">
               Track inventory on the go with our responsive dashboard.
             </p>
+            <div className="mt-5 flex flex-wrap gap-3 items-center">
+              <Link href="#" aria-label="Download on the App Store">
+                <Image
+                  src="/badges/app-store.svg"
+                  alt="App Store badge"
+                  width={135}
+                  height={40}
+                />
+              </Link>
+              <Link href="#" aria-label="Get it on Google Play">
+                <Image
+                  src="/badges/google-play.svg"
+                  alt="Google Play badge"
+                  width={135}
+                  height={40}
+                />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mobile app download */}
+      <section className="py-16 border-t border-subtle">
+        <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
+          <div className="relative aspect-[9/16] w-full max-w-xs md:max-w-sm mx-auto rounded-[2rem] overflow-hidden border border-subtle shadow-sm bg-black/5">
+            <Image
+              src="/app-mock.svg"
+              alt="Mobile app mockup"
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div>
+            <h2 className="text-2xl font-semibold">Get the app</h2>
+            <p className="mt-2 text-muted">
+              Track inventory on the go with our responsive dashboard.
+            </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href="#"
