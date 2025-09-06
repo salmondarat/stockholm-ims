@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatMoney } from "@/components/LocaleCurrencyPicker";
 import useI18n from "@/hooks/useI18n";
+import ComparePlansTable from "@/components/ComparePlansTable";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -157,6 +158,88 @@ export default function PricingPage() {
           </div>
         ))}
       </div>
+
+      {/* Compare Plans table */}
+      <ComparePlansTable
+        plans={displayPlans.map((p) => p.name)}
+        sections={[
+          {
+            title: "Organize",
+            rows: [
+              { label: "Unique items", values: ["100", "5,000", "Unlimited"] },
+              { label: "User seats", values: ["1", "5", "Unlimited"] },
+              { label: "Inventory import (CSV)", values: [true, true, true] },
+              { label: "Item photos", values: [true, true, true] },
+              { label: "Tags & categories", values: [true, true, true] },
+            ],
+          },
+          {
+            title: "Customize",
+            rows: [
+              { label: "Custom fields", values: ["1", "10", "Unlimited"] },
+              { label: "Variants / options", values: [true, true, true] },
+              { label: "Custom role permissions", values: [false, true, true] },
+              { label: "Multi-location support", values: [false, true, true] },
+            ],
+          },
+          {
+            title: "Manage",
+            rows: [
+              { label: "Barcode & QR scanning", values: [true, true, true] },
+              { label: "Barcode label PDFs", values: [true, true, true] },
+              {
+                label: "Item check-in / check-out",
+                values: [true, true, true],
+              },
+              { label: "Purchase orders", values: [false, true, true] },
+              { label: "Pick lists", values: [false, true, true] },
+            ],
+          },
+          {
+            title: "Track & Update",
+            rows: [
+              { label: "Low stock alerts", values: [false, true, true] },
+              { label: "Date-based alerts", values: [false, true, true] },
+              { label: "Offline mode", values: [false, true, true] },
+              { label: "Automatic sync", values: [true, true, true] },
+              { label: "Email alerts", values: [false, true, true] },
+            ],
+          },
+          {
+            title: "Reports",
+            rows: [
+              {
+                label: "Activity history",
+                values: ["1 month", "1 year", "Unlimited"],
+              },
+              { label: "Summary reports", values: [false, true, true] },
+              { label: "Low stock reports", values: [true, true, true] },
+              { label: "Saved reports", values: [false, true, true] },
+            ],
+          },
+          {
+            title: "Integrations",
+            rows: [
+              { label: "Webhooks", values: [false, true, true] },
+              { label: "API", values: [false, true, true] },
+              { label: "SSO", values: [false, false, true] },
+            ],
+          },
+          {
+            title: "Support",
+            rows: [
+              { label: "Help center resources", values: [true, true, true] },
+              { label: "Email support", values: [true, true, true] },
+              { label: "Priority support", values: [false, true, true] },
+              { label: "Onboarding session", values: [false, false, true] },
+              {
+                label: "Dedicated success manager",
+                values: [false, false, true],
+              },
+            ],
+          },
+        ]}
+      />
     </main>
   );
 }
