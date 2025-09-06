@@ -1,5 +1,6 @@
 "use client";
 
+import { Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const KEY = "site-locale-currency";
@@ -19,8 +20,7 @@ export default function LanguagePicker() {
     } catch {}
   }, []);
 
-  const onChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
-    const next = (e.target.value as State["lang"]) || "en";
+  const setLanguage = (next: State["lang"]) => {
     setLang(next);
     try {
       const raw = localStorage.getItem(KEY);
@@ -36,15 +36,19 @@ export default function LanguagePicker() {
     } catch {}
   };
 
+  const toggle = () => setLanguage(lang === "en" ? "id" : "en");
+
   return (
-    <select
-      aria-label="Language"
-      value={lang}
-      onChange={onChange}
-      className="border rounded-md px-2 py-1 bg-transparent text-sm"
-    >
-      <option value="en">English</option>
-      <option value="id">Bahasa</option>
-    </select>
+    <div className="inline-flex items-center gap-2">
+      <button
+        onClick={toggle}
+        aria-label="Change language"
+        title={`Language: ${lang.toUpperCase()} (click to switch)`}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-500/40 text-gray-200 hover:bg-white/10"
+      >
+        <Globe className="h-4 w-4" />
+      </button>
+      <span className="text-xs opacity-80">{lang.toUpperCase()}</span>
+    </div>
   );
 }

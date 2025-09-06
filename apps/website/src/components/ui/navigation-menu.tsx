@@ -19,12 +19,10 @@ import {
   GraduationCap,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
 import useI18n from "@/hooks/useI18n";
 
 export default function NavigationMenu() {
   const { dict } = useI18n();
-  const [showIndustriesMore, setShowIndustriesMore] = useState(false);
   return (
     <Nav.Root className="z-50 contents">
       <Nav.List className="flex items-center gap-1">
@@ -35,7 +33,7 @@ export default function NavigationMenu() {
             <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:rotate-180 group-data-[state=open]:rotate-180" />
           </Nav.Trigger>
           <Nav.Content className="absolute left-0 right-0 top-full mt-0 rounded-2xl border bg-white text-gray-900 shadow-2xl">
-            <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-[280px_1fr_1fr_1fr] gap-8">
+            <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-4 gap-8">
               <div>
                 <div className="text-sm uppercase tracking-wide text-gray-500">
                   Overview
@@ -46,7 +44,11 @@ export default function NavigationMenu() {
                 <p className="mt-2 text-sm text-gray-600">
                   {dict.features.subtitle}
                 </p>
-                {/* Removed "Explore features" link per request */}
+                <div className="mt-4">
+                  <Link href="/features" className="btn btn-outline text-sm">
+                    Features →
+                  </Link>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -102,7 +104,7 @@ export default function NavigationMenu() {
             <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:rotate-180 group-data-[state=open]:rotate-180" />
           </Nav.Trigger>
           <Nav.Content className="absolute left-0 right-0 top-full mt-0 rounded-2xl border bg-white text-gray-900 shadow-2xl">
-            <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-[280px_1fr_1fr] gap-8">
+            <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-3 gap-8">
               {/* Overview */}
               <div>
                 <div className="text-sm uppercase tracking-wide text-gray-500">
@@ -116,6 +118,11 @@ export default function NavigationMenu() {
                   {dict?.solutions?.subtitle ??
                     "No matter what you need to track, Stockholm has you covered."}
                 </p>
+                <div className="mt-4">
+                  <Link href="/solutions" className="btn btn-outline text-sm">
+                    Solutions →
+                  </Link>
+                </div>
               </div>
 
               {/* Use Cases */}
@@ -149,88 +156,42 @@ export default function NavigationMenu() {
                   Industries
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Keep original order to preserve positions */}
                   <SolutionItem
                     icon={<Factory className="icon" />}
                     title="Construction"
                     desc="Manage inventory across all job sites."
                     href="/solutions/construction"
                   />
-                  <div
-                    className={
-                      !showIndustriesMore
-                        ? "invisible pointer-events-none select-none"
-                        : "contents"
-                    }
-                  >
-                    <SolutionItem
-                      icon={<Plug className="icon" />}
-                      title="Electrical"
-                      desc="Track electrical supplies and tools for every job."
-                      href="/solutions/electrical"
-                    />
-                  </div>
+                  <SolutionItem
+                    icon={<Plug className="icon" />}
+                    title="Electrical"
+                    desc="Track electrical supplies and tools for every job."
+                    href="/solutions/electrical"
+                  />
                   <SolutionItem
                     icon={<Activity className="icon" />}
                     title="Medical"
                     desc="Manage medical supplies & equipment on‑the‑go."
                     href="/solutions/medical"
                   />
-                  <div
-                    className={
-                      !showIndustriesMore
-                        ? "invisible pointer-events-none select-none"
-                        : "contents"
-                    }
-                  >
-                    <SolutionItem
-                      icon={<LayoutDashboard className="icon" />}
-                      title="Interior Design"
-                      desc="Visually track inventory across locations."
-                      href="/solutions/design"
-                    />
-                  </div>
+                  <SolutionItem
+                    icon={<LayoutDashboard className="icon" />}
+                    title="Interior Design"
+                    desc="Visually track inventory across locations."
+                    href="/solutions/design"
+                  />
                   <SolutionItem
                     icon={<Boxes className="icon" />}
                     title="Warehouse"
                     desc="Streamline warehouse operations with clarity."
                     href="/solutions/warehouse"
                   />
-                  <div
-                    className={
-                      !showIndustriesMore
-                        ? "invisible pointer-events-none select-none"
-                        : "contents"
-                    }
-                  >
-                    <SolutionItem
-                      icon={<GraduationCap className="icon" />}
-                      title="Education"
-                      desc="Track school inventory and supplies."
-                      href="/solutions/education"
-                    />
-                  </div>
-
-                  {/* Expand/collapse control spans full width; doesn't shift other sections */}
-                  <div className="col-span-2">
-                    {!showIndustriesMore ? (
-                      <button
-                        type="button"
-                        onClick={() => setShowIndustriesMore(true)}
-                        className="w-full rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
-                      >
-                        Show more industries
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setShowIndustriesMore(false)}
-                        className="w-full rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
-                      >
-                        Hide industries
-                      </button>
-                    )}
-                  </div>
+                  <SolutionItem
+                    icon={<GraduationCap className="icon" />}
+                    title="Education"
+                    desc="Track school inventory and supplies."
+                    href="/solutions/education"
+                  />
                 </div>
               </div>
             </div>

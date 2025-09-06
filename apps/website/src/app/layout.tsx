@@ -19,6 +19,7 @@ import ThemeToggle from "../components/ThemeToggle";
 import LanguagePicker from "../components/LanguagePicker";
 import CurrencyDetector from "../components/CurrencyDetector";
 import PageTransition from "../components/PageTransition";
+import ChatWidget from "../components/ChatWidget";
 
 function SiteHeader() {
   return (
@@ -44,78 +45,105 @@ function SiteFooter() {
   const year = new Date().getFullYear();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   return (
-    <footer className="border-t border-subtle mt-16 text-[--foreground]">
+    <footer className="mt-16 bg-gray-950 text-gray-200 border-t border-gray-900">
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4 text-sm">
           <div>
-            <div className="font-semibold text-[--foreground]">Product</div>
-            <ul className="mt-3 space-y-2 text-muted">
+            <div className="font-semibold">Product</div>
+            <ul className="mt-3 space-y-2 text-gray-400">
               <li>
-                <Link href="/features" className="hover:underline">
+                <Link
+                  href="/features"
+                  className="hover:underline hover:text-white"
+                >
                   Features
                 </Link>
               </li>
               <li>
-                <Link href="/solutions" className="hover:underline">
+                <Link
+                  href="/solutions"
+                  className="hover:underline hover:text-white"
+                >
                   Solutions
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="hover:underline">
+                <Link
+                  href="/pricing"
+                  className="hover:underline hover:text-white"
+                >
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link href={`${appUrl}/app`} className="hover:underline">
+                <Link
+                  href={`${appUrl}/app`}
+                  className="hover:underline hover:text-white"
+                >
                   Open App
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <div className="font-semibold text-[--foreground]">Company</div>
-            <ul className="mt-3 space-y-2 text-muted">
+            <div className="font-semibold">Company</div>
+            <ul className="mt-3 space-y-2 text-gray-400">
               <li>
-                <Link href="/about" className="hover:underline">
+                <Link
+                  href="/about"
+                  className="hover:underline hover:text-white"
+                >
                   About
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:underline">
+                <Link
+                  href="/contact"
+                  className="hover:underline hover:text-white"
+                >
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href="/sitemap" className="hover:underline">
+                <Link
+                  href="/sitemap"
+                  className="hover:underline hover:text-white"
+                >
                   Sitemap
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <div className="font-semibold text-[--foreground]">Legal</div>
-            <ul className="mt-3 space-y-2 text-muted">
+            <div className="font-semibold">Legal</div>
+            <ul className="mt-3 space-y-2 text-gray-400">
               <li>
-                <Link href="/privacy" className="hover:underline">
+                <Link
+                  href="/privacy"
+                  className="hover:underline hover:text-white"
+                >
                   Privacy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:underline">
+                <Link
+                  href="/terms"
+                  className="hover:underline hover:text-white"
+                >
                   Terms
                 </Link>
               </li>
               <li>
-                <ManageCookiesLink className="hover:underline" />
+                <ManageCookiesLink className="hover:underline hover:text-white" />
               </li>
             </ul>
           </div>
-          <div className="flex items-start gap-2 justify-start sm:justify-end">
+          <div className="flex items-start gap-3 justify-start sm:justify-end">
             <LanguagePicker />
             <ThemeToggle />
           </div>
         </div>
-        <div className="mt-10 text-center text-sm text-muted">
+        <div className="mt-10 text-center text-sm text-gray-400">
           © {year} Stockholm IMS
         </div>
       </div>
@@ -136,6 +164,7 @@ export default async function RootLayout({
         <SiteHeader />
         <PageTransition>{children}</PageTransition>
         <SiteFooter />
+        <ChatWidget />
         <CookieConsent />
         <ConsentGates />
         <CurrencyDetector />
