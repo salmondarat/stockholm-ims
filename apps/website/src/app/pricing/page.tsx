@@ -191,12 +191,12 @@ export default function PricingPage() {
               </div>
             )}
             {/* Title */}
-            <div className="text-lg font-semibold min-h-[24px]">{p.name}</div>
+            <div className="text-lg font-semibold min-h-[28px]">{p.name}</div>
             {/* Description */}
-            <p className="mt-1 text-sm text-muted min-h-[56px]">{p.desc}</p>
+            <p className="mt-1 text-sm text-muted min-h-[64px]">{p.desc}</p>
             {/* Price row */}
-            <div className="mt-3 min-h-[44px] flex items-end gap-1">
-              <div className="text-3xl font-bold">
+            <div className="mt-3 min-h-[48px] flex items-end gap-1">
+              <div className="text-3xl font-bold leading-none">
                 {typeof p.price === "number"
                   ? p.price === 0
                     ? "$0"
@@ -211,7 +211,7 @@ export default function PricingPage() {
             <div className="mt-1 h-[20px] text-xs">
               {typeof p.monthly === "number" && p.monthly > 0 ? (
                 <button
-                  className="underline text-red-600"
+                  className="underline text-red-600 whitespace-nowrap overflow-hidden text-ellipsis"
                   type="button"
                   onClick={() => {
                     const params = new URLSearchParams(search?.toString());
