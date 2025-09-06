@@ -33,7 +33,7 @@ export default function NavigationMenu() {
             <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:rotate-180 group-data-[state=open]:rotate-180" />
           </Nav.Trigger>
           <Nav.Content className="absolute left-0 right-0 top-full mt-0 rounded-2xl border bg-white text-gray-900 shadow-2xl">
-            <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-4 gap-8">
+            <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-[280px_repeat(3,minmax(0,1fr))] gap-8">
               <div>
                 <div className="text-sm uppercase tracking-wide text-gray-500">
                   Overview
@@ -247,12 +247,14 @@ function MegaItem({
   return (
     <Link
       href={href}
-      className="group flex gap-3 rounded-md p-3 hover:bg-gray-50 transition-colors"
+      className="group grid grid-cols-[34px_minmax(0,1fr)] items-start gap-3 rounded-md p-3 hover:bg-gray-50 transition-colors w-full"
     >
-      <span className="mt-0.5 icon-frame">{icon}</span>
-      <div>
-        <div className="font-medium">{title}</div>
-        <div className="text-xs text-gray-600">{desc}</div>
+      <span className="icon-frame">{icon}</span>
+      <div className="min-w-0">
+        <div className="font-medium leading-5 truncate">{title}</div>
+        <div className="text-xs text-gray-600 leading-4 line-clamp-2">
+          {desc}
+        </div>
       </div>
     </Link>
   );
@@ -272,11 +274,9 @@ function SolutionItem({
   return (
     <Link
       href={href}
-      className="group grid grid-cols-[32px_minmax(0,1fr)] items-start gap-3 rounded-md p-3 hover:bg-gray-50 transition-colors w-full"
+      className="group grid grid-cols-[34px_minmax(0,1fr)] items-start gap-3 rounded-md p-3 hover:bg-gray-50 transition-colors w-full"
     >
-      <span className="mt-0.5 h-6 w-6 inline-grid place-items-center text-gray-700 shrink-0">
-        {icon}
-      </span>
+      <span className="icon-frame">{icon}</span>
       <div className="min-w-0">
         <div className="font-medium leading-5 truncate">{title}</div>
         <div className="text-xs text-gray-600 leading-4 line-clamp-2">

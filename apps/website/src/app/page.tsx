@@ -80,10 +80,10 @@ export default function Home() {
                   className="text-2xl opacity-80"
                 />
                 <Image
-                  src="/badges/google-play.svg"
+                  src="/badges/google-play.png"
                   alt="Google Play badge"
-                  width={135}
-                  height={40}
+                  width={180}
+                  height={54}
                 />
               </Link>
               <Link
@@ -96,10 +96,10 @@ export default function Home() {
                   className="text-2xl opacity-80"
                 />
                 <Image
-                  src="/badges/app-store.svg"
+                  src="/badges/app-store.png"
                   alt="App Store badge"
-                  width={135}
-                  height={40}
+                  width={180}
+                  height={54}
                 />
               </Link>
             </div>
