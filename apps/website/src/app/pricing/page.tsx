@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { formatMoney } from "@/components/LocaleCurrencyPicker";
 import useI18n from "@/hooks/useI18n";
 import ComparePlansTable from "@/components/ComparePlansTable";
+import { Send, TrendingUp, PlaneTakeoff, Rocket, Crown } from "lucide-react";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -237,7 +238,13 @@ export default function PricingPage() {
 
       {/* Compare Plans table */}
       <ComparePlansTable
-        plans={["Free", "Advanced", "Ultra", "Premium", "Enterprise"]}
+        plans={[
+          { name: "Free", icon: <Send className="h-4 w-4" /> },
+          { name: "Advanced", icon: <TrendingUp className="h-4 w-4" /> },
+          { name: "Ultra", icon: <PlaneTakeoff className="h-4 w-4" /> },
+          { name: "Premium", icon: <Rocket className="h-4 w-4" /> },
+          { name: "Enterprise", icon: <Crown className="h-4 w-4" /> },
+        ]}
         sections={[
           {
             title: "Organize",
