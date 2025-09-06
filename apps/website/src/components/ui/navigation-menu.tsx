@@ -272,9 +272,9 @@ function SolutionItem({
   return (
     <Link
       href={href}
-      className="group grid grid-cols-[28px_minmax(0,1fr)] items-start gap-3 rounded-md p-3 hover:bg-gray-50 transition-colors w-full"
+      className="group grid grid-cols-[32px_minmax(0,1fr)] items-start gap-3 rounded-md p-3 hover:bg-gray-50 transition-colors w-full"
     >
-      <span className="mt-0.5 h-6 w-6 inline-grid place-items-center text-gray-700">
+      <span className="mt-0.5 h-6 w-6 inline-grid place-items-center text-gray-700 shrink-0">
         {icon}
       </span>
       <div className="min-w-0">

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const MODEL = process.env.OPENROUTER_MODEL || "openrouter/auto";
+  const MODEL = process.env.OPENROUTER_MODEL || "deepseek/deepseek-chat";
 
   let body: unknown;
   try {
