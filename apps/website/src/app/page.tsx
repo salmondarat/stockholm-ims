@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { FontAwesomeIcon, byPrefixAndName } from "@/lib/fa";
 import { Boxes, Barcode, Camera, Cloud, FileText, Shield } from "lucide-react";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import PricingStrip from "@/components/PricingStrip";
@@ -71,26 +72,32 @@ export default function Home() {
             <div className="mt-5 flex flex-wrap gap-4 items-center">
               <Link
                 href="#"
-                aria-label="Download on the App Store"
+                aria-label="Get it on Google Play"
                 className="inline-flex items-center gap-3"
               >
-                <i className="fa-brands fa-apple text-2xl opacity-80" />
+                <FontAwesomeIcon
+                  icon={byPrefixAndName.fab["google-play"]}
+                  className="text-2xl opacity-80"
+                />
                 <Image
-                  src="/badges/app-store.svg"
-                  alt="App Store badge"
+                  src="/badges/google-play.svg"
+                  alt="Google Play badge"
                   width={135}
                   height={40}
                 />
               </Link>
               <Link
                 href="#"
-                aria-label="Get it on Google Play"
+                aria-label="Download on the App Store"
                 className="inline-flex items-center gap-3"
               >
-                <i className="fa-brands fa-google-play text-2xl opacity-80" />
+                <FontAwesomeIcon
+                  icon={byPrefixAndName.fab["app-store-ios"]}
+                  className="text-2xl opacity-80"
+                />
                 <Image
-                  src="/badges/google-play.svg"
-                  alt="Google Play badge"
+                  src="/badges/app-store.svg"
+                  alt="App Store badge"
                   width={135}
                   height={40}
                 />
@@ -100,57 +107,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Mobile app download */}
-      <section className="py-16 border-t border-subtle">
-        <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
-          <div className="relative aspect-[9/16] w-full max-w-xs md:max-w-sm mx-auto rounded-[2rem] overflow-hidden border border-subtle shadow-sm bg-black/5">
-            <Image
-              src="/app-mock.svg"
-              alt="Mobile app mockup"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div>
-            <h2 className="text-2xl font-semibold">Get the app</h2>
-            <p className="mt-2 text-muted">
-              Track inventory on the go with our responsive dashboard.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link
-                href="#"
-                className="inline-flex items-center gap-2 rounded-md border px-4 py-2"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="opacity-80"
-                >
-                  <path d="M16.365 1.43a4.64 4.64 0 0 1-1.116 3.355c-.84.992-2.211 1.789-3.478 1.696a4.83 4.83 0 0 1 1.116-3.45c.729-.912 2.028-1.696 3.478-1.6zM21.5 17.66c-.6 1.48-1.33 2.952-2.358 4.272-1.006 1.296-2.215 2.736-3.81 2.76-1.642.024-2.17-.84-4.046-.84-1.852 0-2.45.816-4.07.864-1.643.024-2.89-1.4-3.9-2.696C.788 19.92-.186 16.18.31 12.86c.408-2.712 1.887-4.992 4.14-5.04 1.572-.048 2.862 1.008 3.81 1.008.948 0 2.606-1.248 4.41-1.056.749.072 2.862.288 4.21 2.208-3.456 1.848-2.91 6.696.61 7.68z" />
-                </svg>
-                <span className="text-sm">Download on the App Store</span>
-              </Link>
-              <Link
-                href="#"
-                className="inline-flex items-center gap-2 rounded-md border px-4 py-2"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 512 512"
-                  fill="currentColor"
-                  className="opacity-80"
-                >
-                  <path d="M325.3 234.3L104.9 18.5c-10.3-10.1-27.5-2.9-27.5 11.6v451.8c0 14.6 17.3 21.8 27.6 11.5l219.9-219.9c6.3-6.3 6.3-16.4 0-22.8zM371.6 88.3l-26.5 26.6 94.9 94.9c6.3 6.3 16.4 6.3 22.6.1l26.7-26.6c10.3-10.3 3-27.9-11.6-27.9h-79.5c-10 0-15-12.1-8.5-19.1l17.4-17.4c10.1-10 2.9-27.2-11.5-27.2h-24.5zM345.1 396.1l26.5 26.5c10.3 10.3 27.9 3 27.9-11.6v-79.5c0-14.6 12.1-15 19.2-8.5l17.4 17.4c10.1 10.1 27.3 2.9 27.3-11.6v-24.5c0-14.5-17.3-21.7-27.6-11.4l-94.9 94.9z" />
-                </svg>
-                <span className="text-sm">Get it on Google Play</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
       {/* Logos / social proof */}
       <section className="py-10">
         <div className="max-w-6xl mx-auto px-4">
