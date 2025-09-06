@@ -45,29 +45,75 @@ export default function PricingPage() {
   const plans = useMemo(
     () => [
       {
-        name: dict.pricing.starter,
+        key: "free",
+        name: "Free",
         monthly: 0,
-        desc: dict.pricing.starterDesc,
+        desc: "Best for getting started.",
+        cta: "Sign Up",
+        highlights: ["100 Unique Items", "1 User License"],
       },
       {
-        name: dict.pricing.team,
-        monthly: 9,
-        desc: dict.pricing.teamDesc,
+        key: "advanced",
+        name: "Advanced",
+        monthly: 49,
+        desc: "Best for maintaining optimal inventory levels.",
+        cta: "Start Free Trial",
+        highlights: [
+          "500 Unique Items",
+          "2 User Licenses",
+          "+ Unlimited QR Code Label Creation",
+        ],
+      },
+      {
+        key: "ultra",
+        name: "Ultra",
+        monthly: 149,
+        desc: "Best for simplifying day-to-day inventory tasks.",
+        cta: "Start Free Trial",
         popular: true,
+        highlights: [
+          "2,000 Unique Items",
+          "5 User Licenses",
+          "+ Unlimited QR Code & Barcode Label Creation",
+          "+ Purchase Orders",
+        ],
       },
       {
-        name: dict.pricing.business,
-        monthly: 19,
-        desc: dict.pricing.businessDesc,
+        key: "premium",
+        name: "Premium",
+        monthly: 299,
+        desc: "Best for streamlining processes and oversight.",
+        cta: "Start Free Trial",
+        highlights: [
+          "5,000 Unique Items",
+          "8 User Licenses",
+          "+ Customizable Role Permissions",
+          "+ QuickBooks Online Integration",
+        ],
+      },
+      {
+        key: "enterprise",
+        name: "Enterprise",
+        monthly: undefined,
+        desc: "Best for customized processes and control.",
+        cta: "Talk to Sales",
+        quote: true as const,
+        highlights: [
+          "10,000+ Unique Items",
+          "12+ User Licenses",
+          "+ API and Webhooks",
+          "+ Dedicated Customer Success Manager",
+        ],
       },
     ],
-    [dict],
+    [],
   );
 
   const displayPlans = useMemo(() => {
     return plans.map((p) => {
-      if (p.monthly === 0) return { ...p, price: 0 };
-      if (annual)
+      if (p.quote) return { ...p, price: undefined };
+      if ((p.monthly ?? 0) === 0) return { ...p, price: 0 };
+      if (annual && typeof p.monthly === "number")
         return { ...p, price: Math.round(p.monthly * 0.8 * 100) / 100 };
       return { ...p, price: p.monthly };
     });
@@ -129,80 +175,155 @@ export default function PricingPage() {
         </div>
       </header>
 
-      <div className="mt-10 grid md:grid-cols-3 gap-6">
+      <div
+        className="mt-10 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6"
+        id="plans"
+      >
         {displayPlans.map((p) => (
           <div
             key={p.name}
-            className={`rounded-xl border p-6 bg-card ${p.popular ? "border-[--primary] shadow-[0_0_0_3px_rgba(99,102,241,0.12)] scale-[1.02]" : "border-subtle"}`}
+            className={`rounded-xl border p-6 bg-card flex flex-col ${p.popular ? "border-[--primary] shadow-[0_0_0_3px_rgba(239,68,68,0.12)] scale-[1.02]" : "border-subtle"}`}
           >
-            <div className="text-sm text-muted">{p.name}</div>
-            <div className="mt-2 text-3xl font-semibold">
-              {p.price === 0 ? "Free" : formatMoney(p.price, currency)}
+            {p.popular && (
+              <div className="-mx-6 -mt-6 mb-4 rounded-t-xl bg-red-500 text-white text-xs text-center py-1 font-medium">
+                Most Popular
+              </div>
+            )}
+            <div className="text-lg font-semibold">{p.name}</div>
+            <p className="mt-1 text-sm text-muted">{p.desc}</p>
+            <div className="mt-3 text-3xl font-bold">
+              {typeof p.price === "number"
+                ? p.price === 0
+                  ? "$0"
+                  : formatMoney(p.price, currency)
+                : "Get a Quote"}
+              {typeof p.price === "number" && p.price > 0 && (
+                <span className="text-base font-normal text-muted">/mo.</span>
+              )}
             </div>
-            <p className="mt-2 text-muted">
-              {annual && p.monthly ? "Per user / mo (billed yearly)" : p.desc}
-            </p>
-            <ul className="mt-4 text-sm space-y-2">
-              {dict.pricing.features.map((f) => (
-                <li key={f}>{f}</li>
-              ))}
-            </ul>
-            <div className="mt-6">
+            {typeof p.monthly === "number" && p.monthly > 0 && (
+              <div className="mt-1 text-xs">
+                <button
+                  className="underline text-red-600"
+                  type="button"
+                  onClick={() => {
+                    const params = new URLSearchParams(search?.toString());
+                    const next = annual ? "monthly" : "annual";
+                    params.set("billing", next);
+                    router.replace(`?${params.toString()}`);
+                  }}
+                >
+                  switch to yearly to save ~20%
+                </button>
+              </div>
+            )}
+            <div className="mt-4">
               <Link
-                href={`${appUrl}/signup`}
-                className="btn btn-primary w-full text-center"
+                href={p.quote ? "/contact" : `${appUrl}/signup`}
+                className={`btn w-full text-center ${p.quote ? "btn-outline" : "btn-primary"}`}
               >
-                {dict.pricing.startFree}
+                {p.cta}
               </Link>
             </div>
+            <hr className="my-5 border-subtle" />
+            <ul className="text-sm space-y-2 flex-1">
+              {p.highlights?.map((h: string) => (
+                <li key={h}>{h}</li>
+              ))}
+            </ul>
           </div>
         ))}
       </div>
 
       {/* Compare Plans table */}
       <ComparePlansTable
-        plans={displayPlans.map((p) => p.name)}
+        plans={["Free", "Advanced", "Ultra", "Premium", "Enterprise"]}
         sections={[
           {
             title: "Organize",
             rows: [
-              { label: "Unique items", values: ["100", "5,000", "Unlimited"] },
-              { label: "User seats", values: ["1", "5", "Unlimited"] },
-              { label: "Inventory import (CSV)", values: [true, true, true] },
-              { label: "Item photos", values: [true, true, true] },
-              { label: "Tags & categories", values: [true, true, true] },
+              {
+                label: "Unique items",
+                values: ["100", "500", "2,000", "5,000", "10,000+"],
+              },
+              { label: "User licenses", values: ["1", "2", "5", "8", "12+"] },
+              {
+                label: "Inventory import (CSV)",
+                values: [true, true, true, true, true],
+              },
+              { label: "Item photos", values: [true, true, true, true, true] },
+              {
+                label: "Tags & categories",
+                values: [true, true, true, true, true],
+              },
             ],
           },
           {
             title: "Customize",
             rows: [
-              { label: "Custom fields", values: ["1", "10", "Unlimited"] },
-              { label: "Variants / options", values: [true, true, true] },
-              { label: "Custom role permissions", values: [false, true, true] },
-              { label: "Multi-location support", values: [false, true, true] },
+              {
+                label: "Custom fields",
+                values: ["1", "5", "10", "20", "Unlimited"],
+              },
+              {
+                label: "Variants / options",
+                values: [true, true, true, true, true],
+              },
+              {
+                label: "Custom role permissions",
+                values: [false, false, true, true, true],
+              },
+              {
+                label: "Multi-location support",
+                values: [false, false, true, true, true],
+              },
             ],
           },
           {
             title: "Manage",
             rows: [
-              { label: "Barcode & QR scanning", values: [true, true, true] },
-              { label: "Barcode label PDFs", values: [true, true, true] },
+              {
+                label: "Barcode & QR scanning",
+                values: [true, true, true, true, true],
+              },
+              {
+                label: "Barcode label PDFs",
+                values: [true, true, true, true, true],
+              },
               {
                 label: "Item check-in / check-out",
-                values: [true, true, true],
+                values: [true, true, true, true, true],
               },
-              { label: "Purchase orders", values: [false, true, true] },
-              { label: "Pick lists", values: [false, true, true] },
+              {
+                label: "Purchase orders",
+                values: [false, false, true, true, true],
+              },
+              { label: "Pick lists", values: [false, false, true, true, true] },
             ],
           },
           {
             title: "Track & Update",
             rows: [
-              { label: "Low stock alerts", values: [false, true, true] },
-              { label: "Date-based alerts", values: [false, true, true] },
-              { label: "Offline mode", values: [false, true, true] },
-              { label: "Automatic sync", values: [true, true, true] },
-              { label: "Email alerts", values: [false, true, true] },
+              {
+                label: "Low stock alerts",
+                values: [false, true, true, true, true],
+              },
+              {
+                label: "Date-based alerts",
+                values: [false, false, true, true, true],
+              },
+              {
+                label: "Offline mode",
+                values: [false, true, true, true, true],
+              },
+              {
+                label: "Automatic sync",
+                values: [true, true, true, true, true],
+              },
+              {
+                label: "Email alerts",
+                values: [false, true, true, true, true],
+              },
             ],
           },
           {
@@ -210,31 +331,58 @@ export default function PricingPage() {
             rows: [
               {
                 label: "Activity history",
-                values: ["1 month", "1 year", "Unlimited"],
+                values: [
+                  "1 month",
+                  "1 year",
+                  "3 years",
+                  "Unlimited",
+                  "Unlimited",
+                ],
               },
-              { label: "Summary reports", values: [false, true, true] },
-              { label: "Low stock reports", values: [true, true, true] },
-              { label: "Saved reports", values: [false, true, true] },
+              {
+                label: "Summary reports",
+                values: [false, true, true, true, true],
+              },
+              {
+                label: "Low stock reports",
+                values: [true, true, true, true, true],
+              },
+              {
+                label: "Saved reports",
+                values: [false, false, true, true, true],
+              },
             ],
           },
           {
             title: "Integrations",
             rows: [
-              { label: "Webhooks", values: [false, true, true] },
-              { label: "API", values: [false, true, true] },
-              { label: "SSO", values: [false, false, true] },
+              { label: "Webhooks", values: [false, false, true, true, true] },
+              { label: "API", values: [false, false, true, true, true] },
+              { label: "SSO", values: [false, false, false, true, true] },
             ],
           },
           {
             title: "Support",
             rows: [
-              { label: "Help center resources", values: [true, true, true] },
-              { label: "Email support", values: [true, true, true] },
-              { label: "Priority support", values: [false, true, true] },
-              { label: "Onboarding session", values: [false, false, true] },
+              {
+                label: "Help center resources",
+                values: [true, true, true, true, true],
+              },
+              {
+                label: "Email support",
+                values: [true, true, true, true, true],
+              },
+              {
+                label: "Priority support",
+                values: [false, true, true, true, true],
+              },
+              {
+                label: "Onboarding session",
+                values: [false, false, true, true, true],
+              },
               {
                 label: "Dedicated success manager",
-                values: [false, false, true],
+                values: [false, false, false, false, true],
               },
             ],
           },

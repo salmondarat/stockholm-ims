@@ -5,35 +5,53 @@ import { useMemo, useState } from "react";
 
 type Plan = {
   name: string;
-  monthly: number; // USD
+  monthly?: number; // USD
   note: string;
   cta: string;
+  ctaHref?: string;
   badge?: { label: string; color: "success" | "primary" | "brand" };
   popular?: boolean;
+  quote?: boolean; // Enterprise-style pricing
 };
 
 const PLANS: Plan[] = [
   {
-    name: "Starter",
+    name: "Free",
     monthly: 0,
-    note: "Up to 100 items",
-    cta: "Start free",
+    note: "Best for getting started.",
+    cta: "Sign Up",
+    ctaHref: "/pricing",
     badge: { label: "Free", color: "success" },
   },
   {
-    name: "Team",
-    monthly: 8,
-    note: "Per user / month",
-    cta: "See details",
-    badge: { label: "Most popular", color: "primary" },
+    name: "Advanced",
+    monthly: 49,
+    note: "Maintain optimal inventory levels.",
+    cta: "Start Free Trial",
+    ctaHref: "/pricing",
+  },
+  {
+    name: "Ultra",
+    monthly: 149,
+    note: "Simplify day‑to‑day inventory.",
+    cta: "Start Free Trial",
+    ctaHref: "/pricing",
+    badge: { label: "Most Popular", color: "primary" },
     popular: true,
   },
   {
-    name: "Business",
-    monthly: 19,
-    note: "Per user / month",
-    cta: "See details",
-    badge: { label: "Best value", color: "brand" },
+    name: "Premium",
+    monthly: 299,
+    note: "Streamline processes and oversight.",
+    cta: "Start Free Trial",
+    ctaHref: "/pricing",
+  },
+  {
+    name: "Enterprise",
+    note: "Customized processes and control.",
+    cta: "Talk to Sales",
+    ctaHref: "/pricing",
+    quote: true,
   },
 ];
 
@@ -43,9 +61,10 @@ export default function PricingStrip() {
 
   const priced = useMemo(() => {
     return PLANS.map((p) => {
-      if (p.monthly === 0) return { ...p, priceText: "$0" };
+      if (p.quote) return { ...p, priceText: "Get a Quote" };
+      if ((p.monthly ?? 0) === 0) return { ...p, priceText: "$0" };
       // Annual stub: ~20% off, billed yearly
-      if (annual) {
+      if (annual && typeof p.monthly === "number") {
         const perMonth = Math.round(p.monthly * 0.8 * 100) / 100;
         return { ...p, priceText: `$${perMonth}` };
       }
@@ -101,7 +120,7 @@ export default function PricingStrip() {
         </div>
       </div>
 
-      <div className="mt-5 flex flex-col md:flex-row items-stretch gap-4">
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-stretch">
         {priced.map((p) => (
           <div
             key={p.name}
@@ -130,7 +149,7 @@ export default function PricingStrip() {
               {annual && p.monthly ? "Per user / mo (billed yearly)" : p.note}
             </div>
             <Link
-              href="/pricing"
+              href={p.ctaHref || "/pricing"}
               className="mt-3 inline-flex btn btn-outline"
               title={`Open pricing details for ${p.name}`}
             >

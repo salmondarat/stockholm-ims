@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Boxes, Barcode, Camera, Cloud, FileText, Shield } from "lucide-react";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import PricingStrip from "@/components/PricingStrip";
+import ComparePlansTable from "@/components/ComparePlansTable";
 import useI18n from "@/hooks/useI18n";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -249,6 +250,53 @@ export default function Home() {
       <section className="py-16 border-t border-subtle">
         <div className="max-w-6xl mx-auto px-4">
           <PricingStrip />
+        </div>
+      </section>
+
+      {/* Compact compare table on homepage */}
+      <section className="py-8 border-t border-subtle">
+        <div className="max-w-6xl mx-auto px-4">
+          <ComparePlansTable
+            plans={["Free", "Advanced", "Ultra", "Premium", "Enterprise"]}
+            sections={[
+              {
+                title: "Organize",
+                rows: [
+                  {
+                    label: "Unique items",
+                    values: ["100", "500", "2,000", "5,000", "10,000+"],
+                  },
+                  {
+                    label: "User licenses",
+                    values: ["1", "2", "5", "8", "12+"],
+                  },
+                ],
+              },
+              {
+                title: "Manage",
+                rows: [
+                  {
+                    label: "Barcode & QR scanning",
+                    values: [true, true, true, true, true],
+                  },
+                  {
+                    label: "Purchase orders",
+                    values: [false, false, true, true, true],
+                  },
+                ],
+              },
+              {
+                title: "Integrations",
+                rows: [
+                  {
+                    label: "API & Webhooks",
+                    values: [false, false, true, true, true],
+                  },
+                  { label: "SSO", values: [false, false, false, true, true] },
+                ],
+              },
+            ]}
+          />
         </div>
       </section>
 
