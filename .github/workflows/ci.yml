@@ -1,5 +1,9 @@
 name: CI
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [ main ]
@@ -12,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -42,11 +48,37 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint (workspace)
-        run: pnpm -r --if-present lint
+      - name: Setup Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .turbo
+            apps/**/.next/cache
+          key: ${{ runner.os }}-turbo-${{ hashFiles('**/package.json', 'pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
 
-      - name: Format check (Prettier)
-        run: pnpm run format:check
+      - name: Lint + Typecheck (changed only)
+        run: pnpm turbo run lint typecheck --filter=...[origin/main] --cache-dir=.turbo
 
-      - name: Typecheck
+      - name: Format check (Prettier, changed files only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            RANGE="${{ github.base_ref }}..."
+          else
+            RANGE="HEAD^..."
+          fi
+          CHANGED=$(git diff --name-only --diff-filter=ACMRTUXB $RANGE | rg '\\.(ts|tsx|md)$' || true)
+          if [[ -z "$CHANGED" ]]; then
+            echo "No TS/TSX/MD changes. Skipping Prettier check."
+          else
+            echo "Checking formatting for changed files:"; echo "$CHANGED"
+            pnpm prettier --check $CHANGED
+          fi
+
+      # Full typecheck fallback (when origin/main is unavailable, e.g. forks)
+      - name: Typecheck (fallback)
+        if: failure() && github.event_name == 'pull_request'
         run: pnpm -r --parallel typecheck

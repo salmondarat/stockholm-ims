@@ -1,6 +1,7 @@
 import { db } from "@stockholm/db";
 import { updateQuantity, deleteItem } from "./actions";
 import Link from "next/link";
+import AddItemModal from "@/components/AddItemModal";
 // import { summarizeOptions } from "@/lib/options";
 import VariantDetailsToggle from "@/components/VariantDetailsToggle";
 import { listVariantQuantities } from "@/lib/options";
@@ -104,6 +105,18 @@ export default async function ItemsPage({
     data = data.filter((it) => (it.sku ?? "").toLowerCase().includes(q));
   }
 
+  // Categories for AddItemModal
+  const categories = await db.category.findMany({
+    select: { id: true, name: true, parentId: true },
+    orderBy: [{ parentId: "asc" }, { name: "asc" }],
+  });
+  const s3Enabled = Boolean(
+    process.env.S3_ENDPOINT &&
+      process.env.S3_BUCKET &&
+      process.env.S3_ACCESS_KEY_ID &&
+      process.env.S3_SECRET_ACCESS_KEY,
+  );
+
   return (
     <main className="p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -116,12 +129,7 @@ export default async function ItemsPage({
           >
             Export PDF
           </Link>
-          <Link
-            href="/app/items/new"
-            className="px-3 py-2 rounded-md bg-black text-white"
-          >
-            Add Item
-          </Link>
+          <AddItemModal categories={categories} s3Enabled={s3Enabled} />
         </div>
       </div>
 

@@ -268,6 +268,20 @@ export async function createItemAction(
     //   });
     // }
 
+    // Enforce unique name (case-insensitive) to prevent duplicates
+    {
+      const exists = await db.item.findFirst({
+        where: { name: { equals: parsed.name, mode: "insensitive" } },
+        select: { id: true },
+      });
+      if (exists) {
+        return {
+          ok: false,
+          error: "Item name already exists. Please choose another.",
+        };
+      }
+    }
+
     // handle optional media via two paths:
     // - direct-to-s3: client uploads and sends one or more `mediaKey`
     // - server-handled: client sends multiple `images` and we upload here

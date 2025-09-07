@@ -27,6 +27,9 @@ out/
 build
 dist
 
+# Local infra data (ephemeral)
+infra/minio-data/
+
 
 # Debug
 npm-debug.log*

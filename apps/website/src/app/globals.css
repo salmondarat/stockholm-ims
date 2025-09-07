@@ -7,10 +7,11 @@
   --muted: #475569;      /* slate-600 */
   --card: #ffffff;
   --border-color: #e5e7eb;
-  --primary: #4f46e5;    /* indigo-600 */
+  /* Standardize primary/brand to deep blue */
+  --primary: #280299;
   --primary-foreground: #ffffff;
-  --brand: #06b6d4;      /* cyan-500 for CTA */
-  --brand-foreground: #05252a;
+  --brand: #280299;
+  --brand-foreground: #ffffff;
 }
 
 /* Dark theme */
@@ -20,10 +21,10 @@
   --muted: #a8b3cf;      /* secondary text */
   --card: #0f1a33;       /* card background */
   --border-color: #ffffff1a; /* white/10 */
-  --primary: #6366f1; /* indigo-500 */
-  --primary-foreground: #eaf2ff;
-  --brand: #22d3ee;  /* cyan-400 */
-  --brand-foreground: #021a1d;
+  --primary: #280299;
+  --primary-foreground: #ffffff;
+  --brand: #280299;
+  --brand-foreground: #ffffff;
 }
 
 @theme inline {
@@ -89,7 +90,7 @@ button:active, .btn:active { transform: translateY(0.5px) scale(0.99); }
 .page-transition { animation: fade-in-up .25s ease both; }
 
 /* Icon frame utilities for navbar/menus */
-.icon-frame { width:34px; height:34px; aspect-ratio:1/1; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; border:2px solid var(--border-color); border-radius:10px; background:#fff; color: var(--primary); transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .15s ease; }
+.icon-frame { width:34px; height:34px; aspect-ratio:1/1; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; border:2px solid transparent; border-radius:10px; background: var(--primary); color: var(--primary-foreground); transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .15s ease, filter .15s ease; }
 .icon-frame > .icon { width:20px; height:20px; transition: transform .15s ease; }
-.group:hover .icon-frame { background: var(--primary); color: var(--primary-foreground); border-color: transparent; transform: translateY(-1px); }
+.group:hover .icon-frame { filter: brightness(1.05); border-color: transparent; transform: translateY(-1px); }
 .group:hover .icon-frame > .icon { transform: scale(1.1); }

@@ -47,6 +47,8 @@
 
 :root {
   --radius: 0.625rem;
+  --brand: #280299; /* standard brand/primary */
+  --brand-foreground: #ffffff;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -120,8 +122,8 @@
   }
   /* Reserve vertical scrollbar space to prevent layout shift when content height changes */
   html {
-    /* Prevent layout shift when page vertical scrollbar appears/disappears */
-    scrollbar-gutter: stable both-edges;
+    /* Reserve space only on the right to avoid left white gutter */
+    scrollbar-gutter: stable;
   }
   body {
     @apply bg-background text-foreground;

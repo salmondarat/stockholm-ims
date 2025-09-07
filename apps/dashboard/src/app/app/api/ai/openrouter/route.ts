@@ -17,7 +17,6 @@ export async function POST(req: Request) {
     : [];
 
   if (!OPENROUTER_API_KEY) {
-    // Fallback when no key is provided
     const last = messages.length
       ? String(messages[messages.length - 1]?.content || "")
       : "";
@@ -34,7 +33,7 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
         "HTTP-Referer": SITE_URL,
-        "X-Title": "Stockholm IMS",
+        "X-Title": "Stockholm IMS Dashboard",
       },
       body: JSON.stringify({
         model: MODEL,
@@ -42,7 +41,7 @@ export async function POST(req: Request) {
           {
             role: "system",
             content:
-              "You are a helpful support agent for Stockholm IMS website. Answer concisely and help visitors understand features and pricing. If unsure, respond briefly and suggest contacting support.",
+              "You are a helpful assistant for the Stockholm IMS dashboard. Answer concisely about items, inventory and operations.",
           },
           ...messages,
         ],
