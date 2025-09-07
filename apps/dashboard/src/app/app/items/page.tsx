@@ -271,9 +271,9 @@ export default async function ItemsPage({
             Items
           </caption>
           <thead>
-            <tr className="border-b bg-gray-50">
+            <tr className="border-b bg-gray-50 text-sm">
               <th className="p-2 w-[72px]">Photo</th>
-              <th className="text-left p-2 w-[420px]">Name</th>
+              <th className="text-left p-2 w-[360px]">Name / SKU</th>
               <th className="text-left p-2 w-[160px]">Category</th>
               <th className="text-right p-2 w-[100px]">Qty</th>
               <th className="text-right p-2 w-[120px]">Price</th>
@@ -301,13 +301,11 @@ export default async function ItemsPage({
                       <span className="text-xs text-gray-400">—</span>
                     )}
                   </td>
-                  <td className="p-2 align-top relative break-words">
+                  <td className="p-2 align-top">
                     <div className="flex items-baseline justify-between gap-2">
-                      <Link href={`/app/items/${it.id}`}>{it.name}</Link>
+                      <Link href={`/app/items/${it.id}`} className="font-medium truncate block max-w-[340px]">{it.name}</Link>
                     </div>
-                    <div className="text-[11px] text-gray-500">
-                      SKU: {it.sku ?? "-"}
-                    </div>
+                    <div className="text-[11px] text-gray-500 whitespace-nowrap">SKU: {it.sku ?? "-"}</div>
                     {/* Move Show variants toggle to the bottom of the main SKU block */}
                     <div className="mt-1">
                       <VariantDetailsToggle
@@ -372,7 +370,9 @@ export default async function ItemsPage({
                   <td className="p-2">{it.location ?? "-"}</td>
                   <td className="p-2">{it.condition ?? "-"}</td>
                   <td className="p-2">
-                    {Array.isArray(it.tags) ? it.tags.join(", ") : "-"}
+                    <div className="max-w-[220px] truncate">
+                      {Array.isArray(it.tags) ? it.tags.join(", ") : "-"}
+                    </div>
                   </td>
                   <td className="p-2">
                     {low ? (

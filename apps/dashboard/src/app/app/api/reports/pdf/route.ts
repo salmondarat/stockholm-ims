@@ -14,13 +14,8 @@ export async function GET() {
 
   const margin = 40;
   let y = 800;
-  page.drawText("Inventory Report", {
-    x: margin,
-    y,
-    size: 18,
-    font,
-    color: rgb(0.16, 0.01, 0.6),
-  });
+  page.drawText("Stockholm IMS", { x: margin, y, size: 12, font, color: rgb(0.16, 0.01, 0.6) });
+  page.drawText("Inventory Report", { x: margin + 140, y, size: 18, font, color: rgb(0.16, 0.01, 0.6) });
   y -= 24;
   page.drawLine({
     start: { x: margin, y },
@@ -43,7 +38,8 @@ export async function GET() {
     if (y < 60) {
       y = 800;
       const p = pdf.addPage([595.28, 841.89]);
-      p.drawText("Inventory Report (cont.)", { x: margin, y, size: 14, font });
+      p.drawText("Stockholm IMS", { x: margin, y, size: 12, font, color: rgb(0.16, 0.01, 0.6) });
+      p.drawText("Inventory Report (cont.)", { x: margin + 140, y, size: 14, font });
       y -= 24;
     }
     page.drawText(it.name, { x: col[0], y, size: 10, font });
@@ -59,8 +55,15 @@ export async function GET() {
     y -= 14;
   }
 
+  // Footer page numbers
+  const pages = pdf.getPages();
+  const totalPages = pages.length;
+  for (let i = 0; i < totalPages; i++) {
+    const p = pages[i];
+    p.drawText(`${i + 1} / ${totalPages}`, { x: width - margin - 40, y: 30, size: 10, font, color: rgb(0.4,0.4,0.5) });
+  }
+
   const bytes = await pdf.save();
-  // Cast to BodyInit to satisfy TS in Node/Edge environments
   return new Response(bytes as any, {
     headers: {
       "Content-Type": "application/pdf",

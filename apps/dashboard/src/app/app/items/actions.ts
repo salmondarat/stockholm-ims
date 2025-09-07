@@ -233,6 +233,8 @@ export async function createItemAction(
       options: form.get("options"),
     });
 
+    
+
     const tagsArray =
       typeof parsed.tags === "string"
         ? Array.from(
@@ -279,6 +281,17 @@ export async function createItemAction(
           ok: false,
           error: "Item name already exists. Please choose another.",
         };
+      }
+    }
+
+    // Enforce unique SKU (case-insensitive)
+    {
+      const existsSku = await db.item.findFirst({
+        where: { sku: { equals: parsed.sku ?? "", mode: "insensitive" } },
+        select: { id: true },
+      });
+      if (existsSku) {
+        return { ok: false, error: "SKU already exists. Please use a unique SKU." };
       }
     }
 

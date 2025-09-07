@@ -30,6 +30,10 @@ dist
 # Local infra data (ephemeral)
 infra/minio-data/
 
+# Env files
+.env
+.env.local
+
 
 # Debug
 npm-debug.log*

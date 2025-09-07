@@ -4,22 +4,32 @@ import Link from "next/link";
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: { q?: string; cat?: string; minqty?: string };
 }) {
   const q = (searchParams?.q || "").trim();
-  const items = q
-    ? await db.item.findMany({
-        where: {
-          OR: [
-            { name: { contains: q, mode: "insensitive" } },
-            { sku: { contains: q, mode: "insensitive" } },
-            { category: { name: { contains: q, mode: "insensitive" } } },
-          ],
-        },
-        include: { category: true },
-        take: 50,
-      })
-    : [];
+  const cat = (searchParams?.cat || "").trim();
+  const minqty = Number(searchParams?.minqty || "0");
+  const where: any = {};
+  const and: any[] = [];
+  if (q) {
+    and.push({
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { sku: { contains: q, mode: "insensitive" } },
+        { category: { name: { contains: q, mode: "insensitive" } } },
+      ],
+    });
+  }
+  if (cat) and.push({ category: { name: { equals: cat } } });
+  if (Number.isFinite(minqty) && minqty > 0)
+    and.push({ quantity: { gte: minqty } });
+  if (and.length) where.AND = and;
+  const [items, categories] = await Promise.all([
+    q || cat || minqty > 0
+      ? db.item.findMany({ where, include: { category: true }, take: 50 })
+      : Promise.resolve([] as any[]),
+    db.category.findMany({ select: { name: true }, orderBy: { name: "asc" } }),
+  ]);
 
   return (
     <main className="p-6 space-y-6">
@@ -32,6 +42,31 @@ export default async function SearchPage({
           placeholder="Search items, tags, categories…"
           className="w-full rounded-md border px-3 py-2 outline-none"
         />
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <select
+            name="cat"
+            defaultValue={cat}
+            className="rounded-md border px-3 py-2 text-sm"
+          >
+            <option value="">All categories</option>
+            {categories.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            name="minqty"
+            defaultValue={minqty || ""}
+            min={0}
+            className="rounded-md border px-3 py-2 text-sm"
+            placeholder="Min qty"
+          />
+          <button className="rounded-md border px-3 py-2 text-sm bg-white">
+            Apply Filters
+          </button>
+        </div>
         <div className="text-sm text-gray-500 mt-3">
           Showing {items.length} result(s){q ? ` for "${q}"` : ""}.
         </div>

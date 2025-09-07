@@ -139,11 +139,19 @@ export default function ChatWidget() {
         </div>
       ) : (
         <button
-          className="h-14 w-14 rounded-full bg-[--primary] text-[--primary-foreground] shadow-2xl grid place-items-center hover:opacity-90 ring-2 ring-[--primary]/60 transition-transform duration-150 hover:scale-105 active:scale-95 active:translate-y-[1px]"
+          className="h-16 w-16 rounded-full bg-[#e11d48] text-white shadow-xl shadow-black/20 grid place-items-center transition-transform duration-150 hover:scale-105 hover:bg-[#f43f5e] active:scale-95 active:translate-y-[1px] focus:outline-none focus:ring-4 focus:ring-[#fb7185]/50"
           aria-label="Open chat"
           onClick={() => setOpen(true)}
         >
-          <MessageCircle className="h-6 w-6" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="h-7 w-7 text-white"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M12 4C7.582 4 4 7.134 4 10.999c0 1.613.59 3.12 1.635 4.35l-.97 3.517a.75.75 0 0 0 .958.916l3.808-1.184A9.96 9.96 0 0 0 12 18c4.418 0 8-3.134 8-6.999S16.418 4 12 4z" />
+          </svg>
         </button>
       )}
     </div>

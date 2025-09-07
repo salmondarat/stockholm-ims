@@ -1,4 +1,5 @@
 import { auth, signOut } from "@/lib/auth";
+import { db } from "@stockholm/db";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -7,6 +8,13 @@ export default async function ProfilePage() {
   async function logout() {
     "use server";
     await signOut({ redirectTo: "/" });
+  }
+
+  async function updateName(formData: FormData) {
+    "use server";
+    const name = String(formData.get("name") || "").trim();
+    if (!session?.user?.email) return;
+    await db.user.update({ where: { email: session.user.email }, data: { name } });
   }
 
   return (
@@ -31,13 +39,13 @@ export default async function ProfilePage() {
             <div className="text-sm text-gray-600">{user?.email ?? "-"}</div>
           </div>
         </div>
+        <form action={updateName} className="mt-4 space-y-2">
+          <label className="block text-sm">Display name</label>
+          <input name="name" defaultValue={user?.name ?? ""} className="w-full rounded-md border px-3 py-2" />
+          <button type="submit" className="px-3 py-2 rounded-md border">Save</button>
+        </form>
         <form action={logout} className="mt-4">
-          <button
-            type="submit"
-            className="px-4 py-2 rounded-md bg-[#280299] text-white"
-          >
-            Log out
-          </button>
+          <button type="submit" className="px-4 py-2 rounded-md bg-[#280299] text-white">Log out</button>
         </form>
       </div>
     </main>
