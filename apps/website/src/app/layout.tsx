@@ -30,7 +30,11 @@ function SiteHeader({ theme }: { theme: "light" | "dark" }) {
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b relative">
       <div className="site-container py-3 flex items-center justify-between gap-4 text-gray-900">
-        <Link href="/" className="flex items-center gap-2" aria-label="Stockholm IMS home">
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          aria-label="Stockholm IMS home"
+        >
           <Image
             src={logoSrc}
             alt="Stockholm IMS"
