@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FontAwesomeIcon, byPrefixAndName } from "@/lib/fa";
+// Removed FontAwesome icons for store badges
 import { Boxes, Barcode, Camera, Cloud, FileText, Shield } from "lucide-react";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import PricingStrip from "@/components/PricingStrip";
@@ -73,33 +73,27 @@ export default function Home() {
               <Link
                 href="#"
                 aria-label="Get it on Google Play"
-                className="inline-flex items-center gap-3"
+                className="inline-flex items-center"
               >
-                <FontAwesomeIcon
-                  icon={byPrefixAndName.fab["google-play"]}
-                  className="text-2xl opacity-80"
-                />
                 <Image
                   src="/badges/google-play.png"
                   alt="Google Play badge"
                   width={180}
                   height={54}
+                  style={{ height: 54, width: "auto" }}
                 />
               </Link>
               <Link
                 href="#"
                 aria-label="Download on the App Store"
-                className="inline-flex items-center gap-3"
+                className="inline-flex items-center"
               >
-                <FontAwesomeIcon
-                  icon={byPrefixAndName.fab["app-store-ios"]}
-                  className="text-2xl opacity-80"
-                />
                 <Image
                   src="/badges/app-store.png"
                   alt="App Store badge"
                   width={180}
                   height={54}
+                  style={{ height: 54, width: "auto" }}
                 />
               </Link>
             </div>
@@ -131,7 +125,8 @@ export default function Home() {
                   alt={`${logo.name} logo`}
                   width={120}
                   height={24}
-                  className="h-6 w-auto opacity-90"
+                  className="opacity-90"
+                  style={{ height: 24, width: "auto" }}
                 />
               </div>
             ))}

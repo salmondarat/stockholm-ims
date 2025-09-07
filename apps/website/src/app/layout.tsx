@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import Image from "next/image";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,13 +22,23 @@ import CurrencyDetector from "../components/CurrencyDetector";
 import PageTransition from "../components/PageTransition";
 import ChatWidget from "../components/ChatWidget";
 
-function SiteHeader() {
+function SiteHeader({ theme }: { theme: "light" | "dark" }) {
+  const logoSrc =
+    theme === "dark"
+      ? "/brand/horizontal-white.svg"
+      : "/brand/horizontal-black.svg";
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b relative">
       <div className="site-container py-3 flex items-center justify-between gap-4 text-gray-900">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="inline-block h-6 w-6 rounded bg-[--brand]" />
-          <span className="font-semibold">Stockholm IMS</span>
+        <Link href="/" className="flex items-center gap-2" aria-label="Stockholm IMS home">
+          <Image
+            src={logoSrc}
+            alt="Stockholm IMS"
+            width={150}
+            height={32}
+            style={{ height: 28, width: "auto" }}
+            priority
+          />
         </Link>
         <div className="hidden md:block">
           <NavigationMenu />
@@ -164,13 +175,13 @@ export default async function RootLayout({
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-          integrity="sha512-CT1d2M6qkN1W7wqg0F6Ewz0qVq8Q0t9J3T9CzKfR6xH7wqjW1q9HqZ8WmE2YfB8z2o5KQ4y0y3f2l8b8+Z3f5w=="
+          integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
           crossOrigin="anonymous"
           referrerPolicy="no-referrer"
         />
       </head>
       <body className={`antialiased bg-[--background] text-[--foreground]`}>
-        <SiteHeader />
+        <SiteHeader theme={theme} />
         <PageTransition>{children}</PageTransition>
         <SiteFooter />
         <ChatWidget />

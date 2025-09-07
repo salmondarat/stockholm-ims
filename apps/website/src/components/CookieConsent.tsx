@@ -106,7 +106,7 @@ export default function CookieConsent({
 
   return (
     <div className="fixed inset-x-3 bottom-3 z-[60] md:inset-x-auto md:right-6 md:left-auto">
-      <div className="max-w-2xl rounded-2xl border border-subtle bg-card/95 backdrop-blur px-4 py-4 shadow-xl md:px-6">
+      <div className="max-w-2xl rounded-2xl border border-subtle bg-card px-4 py-4 shadow-xl md:px-6">
         <div className="space-y-3 text-sm">
           <p>
             We use cookies to make Stockholm IMS work and to improve it over
