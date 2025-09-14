@@ -1,4 +1,5 @@
 // apps/dashboard/src/lib/auth.ts
+import "../../types/next-auth.d.ts";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -13,7 +14,6 @@ const CredentialsSchema = z.object({
   password: z.string().min(1),
 });
 
-// Build providers list conditionally to avoid requiring OAuth env in dev
 const providers: Provider[] = [
   Credentials({
     name: "Credentials",
@@ -27,57 +27,83 @@ const providers: Provider[] = [
 
       const { email, password } = parsed.data;
 
-      // gunakan salah satu dari dua gaya query ini:
       const user = await db.user.findUnique({ where: { email } });
 
-      if (!user) return null;
+      if (!user?.passwordHash) return null;
 
-      const hash =
-        typeof user.passwordHash === "string" && user.passwordHash
-          ? user.passwordHash
-          : typeof (user as { password?: string }).password === "string"
-            ? (user as { password?: string }).password!
-            : null;
-      if (!hash) return null;
-
-      const ok = await bcrypt.compare(password, hash);
+      const ok = await bcrypt.compare(password, user.passwordHash);
       if (!ok) return null;
 
+      // Return user dengan explicit typing
       return {
         id: String(user.id),
         email: user.email,
         name: user.name ?? null,
-        role: (user as { role?: string }).role ?? "MEMBER",
+        role: user.role ?? "MEMBER",
       };
     },
   }),
 ];
 
-const googleClientId =
-  process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret =
-  process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+const googleClientId = process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+
 if (googleClientId && googleClientSecret) {
   providers.push(
-    Google({ clientId: googleClientId, clientSecret: googleClientSecret }),
+    Google({ 
+      clientId: googleClientId, 
+      clientSecret: googleClientSecret,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          role: "MEMBER", // Default role untuk Google OAuth
+        };
+      },
+    }),
   );
 }
+
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   providers,
+  secret: authSecret || undefined,
+
+  // Avoid decrypting any stale session token cookies from previous secrets
+  // by using a custom cookie name (helps eliminate JWTSessionError noise in dev).
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.AUTH_SESSION_COOKIE_NAME ||
+        (process.env.NODE_ENV === "production"
+          ? "__Secure-stk.session-token"
+          : "stk.session-token"),
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
 
   callbacks: {
-    async jwt({ token, user }) {
+    jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role?: string }).role ?? "MEMBER";
+        // Sekarang TypeScript mengenali user.role
+        token.role = user.role;
       }
       return token;
     },
-    async session({ session, token }) {
+    session({ session, token }) {
       if (session.user) {
-        (session.user as { role?: string }).role =
-          typeof token.role === "string" ? token.role : "MEMBER";
+        // Sekarang TypeScript mengenali token.role dan session.user.role
+        session.user.id = token.sub!;
+        session.user.role = token.role;
       }
       return session;
     },

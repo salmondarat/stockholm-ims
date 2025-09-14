@@ -1,4 +1,4 @@
-import XLSX from "xlsx";
+import * as XLSX from "xlsx";
 
 export async function GET() {
   const ws = XLSX.utils.aoa_to_sheet([
@@ -15,4 +15,3 @@ export async function GET() {
     },
   });
 }
-

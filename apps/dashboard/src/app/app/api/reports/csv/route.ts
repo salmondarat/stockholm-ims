@@ -1,4 +1,6 @@
 import { db } from "@stockholm/db";
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET() {
   const items = await db.item.findMany({ include: { category: true } });

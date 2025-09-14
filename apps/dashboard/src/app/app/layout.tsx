@@ -4,6 +4,9 @@ import MobileTopbar from "@/components/MobileTopbar";
 import { auth } from "@/lib/auth";
 import ChatWidget from "@/components/ChatWidget";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export default async function AppLayout({
   children,
 }: {

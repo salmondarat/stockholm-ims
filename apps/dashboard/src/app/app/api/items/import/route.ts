@@ -1,4 +1,4 @@
-import XLSX from "xlsx";
+import * as XLSX from "xlsx";
 import { db } from "@stockholm/db";
 
 export async function POST(req: Request) {
@@ -57,4 +57,3 @@ export async function POST(req: Request) {
 
   return Response.json({ ok: true, inserted, skipped, errors });
 }
-

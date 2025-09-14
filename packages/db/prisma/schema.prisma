@@ -15,7 +15,6 @@ model User {
   passwordHash String   @map("password_hash")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  @@map("users")
 }
 
 model Item {

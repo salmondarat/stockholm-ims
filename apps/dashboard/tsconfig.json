@@ -3,28 +3,14 @@
   "compilerOptions": {
     "strict": true,
     "target": "ESNext",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@stockholm/db": [
-        "../../packages/db/src"
-      ],
-      "@stockholm/config": [
-        "../../packages/config/src"
-      ],
-      "@stockholm/config/*": [
-        "../../packages/config/src/*"
-      ],
-      "@stockholm/utils": [
-        "../../packages/utils/src"
-      ]
+      "@/*": ["./src/*"],
+      "@stockholm/db": ["../../packages/db/src"],
+      "@stockholm/config": ["../../packages/config/src"],
+      "@stockholm/config/*": ["../../packages/config/src/*"],
+      "@stockholm/utils": ["../../packages/utils/src"]
     },
     "allowJs": true,
     "noEmit": true,
@@ -32,22 +18,14 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve", // ✅ ganti preserve -> react-jsx
+    "jsx": "preserve",
     "plugins": [
-      {
-        "name": "next"
-      }
+      { "name": "next" }
     ],
     "skipLibCheck": true,
     "module": "ESNext",
-    "moduleResolution": "Bundler" // ✅ optional: lebih cocok untuk Next 15
+    "moduleResolution": "Bundler"
   },
-  "include": [
-    "next-env.d.ts",
-    "src/**/*",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["next-env.d.ts", "src/**/*", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

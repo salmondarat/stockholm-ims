@@ -1,4 +1,6 @@
 import { db } from "@stockholm/db";
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export async function GET() {

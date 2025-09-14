@@ -1,4 +1,6 @@
 import { db } from "@stockholm/db";
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 import { revalidatePath } from "next/cache";
 
 async function updateTagsAction(formData: FormData) {

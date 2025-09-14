@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createItemAction,
   type CreateItemState,
@@ -25,7 +25,11 @@ export default function AddItemModal({
   buttonClass?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useActionState(createItemAction, initialState);
+  const [state, setState] = useState<CreateItemState>(initialState);
+  const formAction = async (formData: FormData) => {
+    const next = await createItemAction(state, formData);
+    setState(next);
+  };
   const formRef = useRef<HTMLFormElement | null>(null);
   const [storage, setStorage] = useState<"local" | "s3">(
     s3Enabled ? "s3" : "local",

@@ -1,0 +1,6 @@
+services:
+  stockholm:
+    image: stockholm
+    build:
+      context: .
+      dockerfile: ./Dockerfile

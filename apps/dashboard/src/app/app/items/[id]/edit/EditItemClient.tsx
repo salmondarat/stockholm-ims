@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import UploadMedia from "@/components/UploadMedia";
 import CategoryCombobox from "@/components/CategoryCombobox";
@@ -57,10 +57,11 @@ export default function EditItemClient({
   s3Enabled?: boolean;
 }) {
   const router = useRouter();
-  const [state, formAction] = useActionState<UpdateItemState, FormData>(
-    updateItemAction,
-    { ok: false },
-  );
+  const [state, setState] = useState<UpdateItemState>({ ok: false });
+  const formAction = async (formData: FormData) => {
+    const next = await updateItemAction(state, formData);
+    setState(next);
+  };
   const formRef = useRef<HTMLFormElement | null>(null);
   const [storage, setStorage] = useState<"local" | "s3">(
     s3Enabled ? "s3" : "local",

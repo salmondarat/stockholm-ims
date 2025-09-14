@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useFormStatus } from "react-dom"; // keep this
-import { useActionState, useEffect, useRef, useState } from "react"; // <-- useActionState here
+import { useEffect, useRef, useState } from "react";
 import UploadMedia from "@/components/UploadMedia";
 import CategoryCombobox from "@/components/CategoryCombobox";
 import SuccessDialog from "@/components/SuccessDialog";
@@ -35,8 +35,12 @@ export default function NewItemClient({
 }) {
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  // ⬇️ useActionState replaces useFormState
-  const [state, formAction] = useActionState(createItemAction, initialState);
+  // React 18 shim for React 19's useActionState
+  const [state, setState] = useState<CreateItemState>(initialState);
+  const formAction = async (formData: FormData) => {
+    const next = await createItemAction(state, formData);
+    setState(next);
+  };
 
   const [showDialog, setShowDialog] = useState(false);
   const [storage, setStorage] = useState<"local" | "s3">(

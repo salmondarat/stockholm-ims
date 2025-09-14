@@ -1,6 +1,4 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+module.exports = {
   experimental: {
     serverActions: {
       // naikin limit biar upload file via Server Actions nggak 1MB lagi
@@ -11,5 +9,3 @@ const nextConfig: NextConfig = {
     // Kalau perlu, tetap declare ini supaya Turbopack tahu dependency server
   },
 };
-
-export default nextConfig;
