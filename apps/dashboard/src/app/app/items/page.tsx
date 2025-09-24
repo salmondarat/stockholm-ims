@@ -2,9 +2,12 @@ import { db } from "@stockholm/db";
 import { updateQuantity, deleteItem } from "./actions";
 import Link from "next/link";
 import AddItemModal from "@/components/AddItemModal";
-// import { summarizeOptions } from "@/lib/options";
+import FilterMenu from "@/components/FilterMenu";
+import { Pencil } from "lucide-react";
 import VariantDetailsToggle from "@/components/VariantDetailsToggle";
 import { listVariantQuantities } from "@/lib/options";
+import { resolvePrice } from "@/lib/price";
+import DeleteItemButton from "./DeleteItemButton";
 
 export const metadata = { title: "Items — Stockholm IMS" };
 
@@ -17,7 +20,14 @@ export default async function ItemsPage({
   // 👇 MUST await before using properties
   const params = await searchParams;
   const filter = typeof params?.filter === "string" ? params.filter : undefined;
-  const skuQuery = typeof params?.sku === "string" ? params.sku : undefined;
+  const searchQuery =
+    typeof params?.search === "string" ? params.search?.trim() : undefined;
+  const categoryFilter =
+    typeof params?.category === "string" ? params.category : undefined;
+  const conditionFilter =
+    typeof params?.condition === "string" ? params.condition : undefined;
+  const locationFilter =
+    typeof params?.location === "string" ? params.location : undefined;
 
   // Load items; if ItemVariant model exists, load variants via separate query; otherwise derive from legacy options
   let list: Array<{
@@ -31,7 +41,7 @@ export default async function ItemsPage({
     tags: unknown;
     price: unknown;
     lowStockThreshold: number | null;
-    category: { name: string } | null;
+    category: { id: string; name: string } | null;
     options: unknown;
     variants: Array<{
       attrs: Record<string, string>;
@@ -41,7 +51,7 @@ export default async function ItemsPage({
   }> = [];
   const rows = await db.item.findMany({
     orderBy: { createdAt: "asc" },
-    include: { category: { select: { name: true } } },
+    include: { category: { select: { id: true, name: true } } },
   });
   const ids = rows.map((r) => r.id);
   const variantsMap = new Map<
@@ -88,7 +98,9 @@ export default async function ItemsPage({
       price: r.price,
       lowStockThreshold:
         (r as { lowStockThreshold?: number | null }).lowStockThreshold ?? 0,
-      category: r.category as { name: string } | null,
+      category: r.category
+        ? { id: r.category.id, name: r.category.name }
+        : null,
       options: (r as { options?: unknown }).options,
       variants: vars,
     };
@@ -100,323 +112,376 @@ export default async function ItemsPage({
 
   const lowCount = list.filter(isLow).length;
   let data = filter === "low" ? list.filter(isLow) : list;
-  if (skuQuery) {
-    const q = skuQuery.toLowerCase();
-    data = data.filter((it) => (it.sku ?? "").toLowerCase().includes(q));
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    data = data.filter((it) => {
+      const nameMatch = it.name.toLowerCase().includes(q);
+      const skuMatch = (it.sku ?? "").toLowerCase().includes(q);
+      let tagsMatch = false;
+      if (it.tags) {
+        if (Array.isArray(it.tags)) {
+          tagsMatch = it.tags.some((tag: string) =>
+            tag.toLowerCase().includes(q)
+          );
+        } else {
+          tagsMatch = JSON.stringify(it.tags).toLowerCase().includes(q);
+        }
+      }
+      return nameMatch || skuMatch || tagsMatch;
+    });
   }
 
-  // Categories for AddItemModal
+  if (categoryFilter) {
+    data = data.filter((it) => it.category?.id === categoryFilter);
+  }
+
+  if (conditionFilter) {
+    data = data.filter((it) => it.condition === conditionFilter);
+  }
+
+  if (locationFilter) {
+    data = data.filter((it) => it.location === locationFilter);
+  }
+
+  // Categories for AddItemModal and filters
   const categories = await db.category.findMany({
     select: { id: true, name: true, parentId: true },
     orderBy: [{ parentId: "asc" }, { name: "asc" }],
+  });
+
+  // Unique conditions and locations for filters
+  const uniqueConditions = await db.item.findMany({
+    select: { condition: true },
+    distinct: ["condition"],
+    where: { condition: { not: null } },
+    orderBy: { condition: "asc" },
+  });
+
+  const uniqueLocations = await db.item.findMany({
+    select: { location: true },
+    distinct: ["location"],
+    where: { location: { not: null } },
+    orderBy: { location: "asc" },
   });
   const s3Enabled = Boolean(
     process.env.S3_ENDPOINT &&
       process.env.S3_BUCKET &&
       process.env.S3_ACCESS_KEY_ID &&
-      process.env.S3_SECRET_ACCESS_KEY,
+      process.env.S3_SECRET_ACCESS_KEY
   );
 
+  const allParams = new URLSearchParams();
+  if (searchQuery) allParams.set("search", searchQuery);
+  if (categoryFilter) allParams.set("category", categoryFilter);
+  if (conditionFilter) allParams.set("condition", conditionFilter);
+  if (locationFilter) allParams.set("location", locationFilter);
+  const allHref = allParams.toString()
+    ? `/app/items?${allParams.toString()}`
+    : "/app/items";
+
+  const lowParams = new URLSearchParams({ filter: "low" });
+  if (searchQuery) lowParams.set("search", searchQuery);
+  if (categoryFilter) lowParams.set("category", categoryFilter);
+  if (conditionFilter) lowParams.set("condition", conditionFilter);
+  if (locationFilter) lowParams.set("location", locationFilter);
+  const lowHref = `/app/items?${lowParams.toString()}`;
+
   return (
-    <main className="p-6 space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold md:sr-only">Items</h1>
-        <div className="flex items-center gap-2">
+    <main className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h1 className="text-3xl font-bold">Items</h1>
+        <div className="flex items-center gap-2 self-start md:self-auto">
           <Link
             href="/api/exports/items"
-            className="px-3 py-2 rounded-md bg-emerald-600 text-white"
+            className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-md bg-white hover:bg-gray-50 transition-colors"
             prefetch={false}
           >
             Export PDF
           </Link>
-          <AddItemModal categories={categories} s3Enabled={s3Enabled} />
+          <AddItemModal
+            categories={categories}
+            s3Enabled={s3Enabled}
+            buttonClass="px-4 py-2 text-sm font-medium text-white bg-[#4F46E5] rounded-md shadow-sm hover:bg-indigo-600 transition-colors"
+          />
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-sm">
+      <FilterMenu
+        searchQuery={searchQuery}
+        categoryFilter={categoryFilter}
+        conditionFilter={conditionFilter}
+        locationFilter={locationFilter}
+        filter={filter}
+        categories={categories}
+        uniqueConditions={uniqueConditions
+          .map((c) => c.condition)
+          .filter((val): val is string => val != null)}
+        uniqueLocations={uniqueLocations
+          .map((l) => l.location)
+          .filter((val): val is string => val != null)}
+      />
+
+      <div className="flex items-center space-x-6 border-b border-gray-200 pb-2">
         <Link
-          href="/app/items"
-          className={`px-2 py-1 rounded border ${filter !== "low" ? "bg-gray-100" : "bg-white"}`}
+          href={allHref}
+          className={`py-3 font-medium border-b-2 transition-colors ${
+            filter !== "low"
+              ? "border-[#4F46E5] text-[#4F46E5]"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
         >
           All
         </Link>
         <Link
-          href="/app/items?filter=low"
-          className={`px-2 py-1 rounded border ${filter === "low" ? "bg-red-50 border-red-300 text-red-700" : "bg-white"}`}
+          href={lowHref}
+          className={`relative py-3 font-medium border-b-2 transition-colors ${
+            filter === "low"
+              ? "border-[#4F46E5] text-[#4F46E5]"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
         >
           Low Stock
-          <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1 text-white text-xs">
+          <span className="absolute top-1 -right-5 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
             {lowCount}
           </span>
         </Link>
       </div>
 
       {/* Mobile: card list */}
-      <div className="md:hidden">
-        <div className="divide-y rounded-md border bg-white">
-          {data.map((it) => {
+      <div className="md:hidden space-y-4">
+        {data.map((it) => {
+          const low = isLow(it);
+          const sum = it.variants.reduce(
+            (acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0),
+            0
+          );
+          const hasVariants = it.variants.length > 0;
+          const priceValue = resolvePrice(it.price);
+          const priceDisplay = Number.isFinite(priceValue)
+            ? `$${priceValue.toFixed(2)}`
+            : "$0.00";
+          return (
+            <div
+              key={it.id}
+              className={`rounded-xl border border-gray-200 bg-white shadow-sm p-4 ${low ? "bg-red-50 border-red-300" : ""}`}
+            >
+              <div className="grid grid-cols-[64px_1fr] gap-3">
+                <div className="shrink-0">
+                  {it.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={it.photoUrl}
+                      alt=""
+                      className="h-16 w-16 rounded-md object-cover"
+                    />
+                  ) : (
+                    <div className="h-16 w-16 grid place-items-center rounded-md bg-gray-100 text-xs text-gray-400">
+                      —
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <Link
+                      href={`/app/items/${it.id}`}
+                      className="font-semibold truncate"
+                    >
+                      {it.name}
+                    </Link>
+                  </div>
+                  <div className="text-[11px] text-gray-500">
+                    SKU: {it.sku ?? "-"}
+                  </div>
+                  <div className="mt-2 grid grid-cols-[auto_1fr_auto] items-center gap-3 text-sm">
+                    <div className="font-medium">
+                      {hasVariants ? sum : it.quantity}
+                    </div>
+                    {hasVariants ? (
+                      <div className="text-[11px] text-gray-500">
+                        from variants
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-gray-500">Qty</div>
+                    )}
+                    <div className="text-right font-medium text-gray-900">
+                      {priceDisplay}
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-gray-500 mt-1">
+                    {it.category?.name ?? "-"} • {it.location ?? "-"}
+                  </div>
+                  <div className="mt-2">
+                    <VariantDetailsToggle
+                      inline
+                      variants={
+                        it.variants as Array<{
+                          attrs: Record<string, string>;
+                          qty: number;
+                          sku?: string;
+                        }>
+                      }
+                    />
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Link
+                      href={`/app/items/${it.id}/edit`}
+                      aria-label="Edit item"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#4F46E5] text-white shadow-sm hover:bg-[#4338CA] transition-colors"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Link>
+                    <DeleteItemButton
+                      itemName={it.name}
+                      onDelete={async () => {
+                        "use server";
+                        await deleteItem(it.id);
+                      }}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-500 transition-colors hover:bg-red-50"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {!data.length && (
+          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-6 text-center text-gray-500">
+            {filter === "low" ? "No low-stock items." : "No items yet."}
+          </div>
+        )}
+      </div>
+
+      <div className="hidden md:block">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="hidden md:grid grid-cols-12 gap-4 bg-gray-50 px-6 py-4 text-sm font-semibold text-gray-500">
+            <div className="col-span-1" />
+            <div className="col-span-4">Name / SKU</div>
+            <div className="col-span-2">Category</div>
+            <div className="col-span-1 text-right">Qty</div>
+            <div className="col-span-1 text-right">Price</div>
+            <div className="col-span-1 text-center">Status</div>
+            <div className="col-span-2 text-right">Actions</div>
+          </div>
+          {data.map((it, index) => {
             const low = isLow(it);
             const sum = it.variants.reduce(
               (acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0),
-              0,
+              0
             );
             const hasVariants = it.variants.length > 0;
+            const priceValue = resolvePrice(it.price);
+            const priceDisplay = Number.isFinite(priceValue)
+              ? `$${priceValue.toFixed(2)}`
+              : "$0.00";
             return (
-              <div key={it.id} className="p-3">
-                <div className="grid grid-cols-[64px_1fr] gap-3">
-                  <div className="shrink-0">
-                    {it.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={it.photoUrl}
-                        alt=""
-                        className="h-16 w-16 object-cover rounded-md border"
-                      />
-                    ) : (
-                      <div className="h-16 w-16 grid place-items-center text-xs text-gray-400 border rounded-md">
-                        —
-                      </div>
-                    )}
+              <div
+                key={it.id}
+                className={`grid grid-cols-12 items-center gap-4 px-6 py-4 text-sm transition-colors ${
+                  index !== 0 ? "border-t border-gray-100" : ""
+                } ${low ? "bg-red-50 border-l-4 border-red-500" : "hover:bg-indigo-50/40"}`}
+              >
+                <div className="col-span-1">
+                  {it.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={it.photoUrl}
+                      alt=""
+                      className="h-12 w-12 rounded-md object-cover"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 rounded-md bg-gray-100 grid place-items-center text-xs text-gray-400">
+                      —
+                    </div>
+                  )}
+                </div>
+                <div className="col-span-4">
+                  <Link
+                    href={`/app/items/${it.id}`}
+                    className="font-medium text-gray-900 hover:text-[#4F46E5]"
+                  >
+                    {it.name}
+                  </Link>
+                  <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                    <span>SKU: {it.sku ?? "-"}</span>
+                    <span className="text-gray-300">•</span>
+                    <span>{it.location ?? "No location"}</span>
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <Link
-                        href={`/app/items/${it.id}`}
-                        className="font-medium truncate"
-                      >
-                        {it.name}
-                      </Link>
-                      {low ? (
-                        <span className="text-[10px] rounded px-1.5 py-0.5 bg-red-100 text-red-700">
-                          Low
-                        </span>
-                      ) : (
-                        <span className="text-[10px] rounded px-1.5 py-0.5 bg-green-100 text-green-700">
-                          OK
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[11px] text-gray-500">
-                      SKU: {it.sku ?? "-"}
-                    </div>
-                    <div className="mt-1 text-sm grid grid-cols-[auto_1fr_auto] items-center gap-4">
-                      <div className="font-medium">
-                        {hasVariants ? sum : it.quantity}
-                      </div>
-                      {hasVariants && (
-                        <div className="text-[11px] text-gray-500">
-                          from variants
-                        </div>
-                      )}
-                      {typeof it.price === "object" ||
-                      typeof it.price === "number" ? (
-                        <div className="text-right text-sm">
-                          {"$" + Number(it.price || 0).toFixed(2)}
-                        </div>
-                      ) : (
-                        <div className="text-right text-sm">{"$0.00"}</div>
-                      )}
-                    </div>
-                    <div className="text-[11px] text-gray-500 mt-1">
-                      {it.category?.name ?? "-"} • {it.location ?? "-"}
-                    </div>
-                    <div className="mt-1">
-                      <VariantDetailsToggle
-                        inline
-                        variants={
-                          it.variants as Array<{
-                            attrs: Record<string, string>;
-                            qty: number;
-                            sku?: string;
-                          }>
-                        }
-                      />
-                    </div>
-                    <div className="mt-2 flex items-center gap-2 text-xs">
-                      <Link
-                        href={`/app/items/${it.id}/edit`}
-                        className="px-2 py-1 border rounded"
-                      >
-                        Edit
-                      </Link>
-                      <form
-                        action={async () => {
-                          "use server";
-                          await deleteItem(it.id);
-                        }}
-                      >
-                        <button className="px-2 py-1 border rounded">
-                          Delete
-                        </button>
-                      </form>
-                    </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    <VariantDetailsToggle
+                      inline
+                      variants={
+                        it.variants as Array<{
+                          attrs: Record<string, string>;
+                          qty: number;
+                          sku?: string;
+                        }>
+                      }
+                    />
                   </div>
+                </div>
+                <div className="col-span-2 text-gray-700">
+                  {it.category?.name ?? "-"}
+                </div>
+                <div className="col-span-1 text-right font-medium text-gray-900">
+                  {hasVariants ? (
+                    <div>
+                      <div>{sum}</div>
+                      <div className="text-[11px] text-gray-500">
+                        from variants
+                      </div>
+                    </div>
+                  ) : (
+                    <form
+                      action={async (fd) => {
+                        "use server";
+                        const q = Number(fd.get("q") ?? it.quantity);
+                        await updateQuantity(it.id, q);
+                      }}
+                      className="inline-flex items-center justify-end gap-2"
+                    >
+                      <input
+                        type="number"
+                        name="q"
+                        defaultValue={it.quantity}
+                        min={0}
+                        className="w-20 rounded-md border border-gray-300 px-2 py-1 text-right text-sm"
+                      />
+                      <button className="rounded-md border border-gray-300 px-2 py-1 text-xs font-medium text-gray-600 hover:border-gray-400">
+                        Save
+                      </button>
+                    </form>
+                  )}
+                </div>
+                <div className="col-span-1 text-right font-semibold text-gray-900">
+                  {priceDisplay}
+                </div>
+                <div className="col-span-1 flex justify-center" />
+                <div className="col-span-2 flex items-center justify-end gap-2">
+                  <Link
+                    href={`/app/items/${it.id}/edit`}
+                    aria-label="Edit item"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#4F46E5] text-white shadow-sm hover:bg-[#4338CA] transition-colors"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Link>
+                  <DeleteItemButton
+                    itemName={it.name}
+                    onDelete={async () => {
+                      "use server";
+                      await deleteItem(it.id);
+                    }}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-500 transition-colors hover:bg-red-50"
+                  />
                 </div>
               </div>
             );
           })}
           {!data.length && (
-            <div className="p-6 text-center text-gray-500">
+            <div className="px-6 py-12 text-center text-gray-500">
               {filter === "low" ? "No low-stock items." : "No items yet."}
             </div>
           )}
         </div>
-      </div>
-
-      {/* Desktop/Tablet: table with horizontal scroll if needed */}
-      {/* Fix layout shift when toggling variant details by reserving space */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-sm border-collapse table-fixed min-w-[1040px]">
-          <caption className="caption-top text-left p-2 pb-3 font-medium text-gray-700">
-            Items
-          </caption>
-          <thead>
-            <tr className="border-b bg-gray-50 text-sm">
-              <th className="p-2 w-[72px]">Photo</th>
-              <th className="text-left p-2 w-[360px]">Name / SKU</th>
-              <th className="text-left p-2 w-[160px]">Category</th>
-              <th className="text-right p-2 w-[100px]">Qty</th>
-              <th className="text-right p-2 w-[120px]">Price</th>
-              <th className="text-left p-2 w-[160px]">Location</th>
-              <th className="text-left p-2 w-[140px]">Condition</th>
-              <th className="text-left p-2 w-[220px]">Tags</th>
-              <th className="p-2 w-[96px]">Status</th>
-              <th className="p-2 w-[140px]">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((it) => {
-              const low = isLow(it);
-              return (
-                <tr key={it.id} className="border-b">
-                  <td className="p-2">
-                    {it.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={it.photoUrl}
-                        alt=""
-                        className="h-12 w-12 object-cover rounded-md border"
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="p-2 align-top">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <Link href={`/app/items/${it.id}`} className="font-medium truncate block max-w-[340px]">{it.name}</Link>
-                    </div>
-                    <div className="text-[11px] text-gray-500 whitespace-nowrap">SKU: {it.sku ?? "-"}</div>
-                    {/* Move Show variants toggle to the bottom of the main SKU block */}
-                    <div className="mt-1">
-                      <VariantDetailsToggle
-                        inline
-                        variants={
-                          it.variants as Array<{
-                            attrs: Record<string, string>;
-                            qty: number;
-                            sku?: string;
-                          }>
-                        }
-                      />
-                    </div>
-                  </td>
-                  <td className="p-2">{it.category?.name ?? "-"}</td>
-                  <td className="p-2 text-right align-top">
-                    {(() => {
-                      const sum = it.variants.reduce(
-                        (acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0),
-                        0,
-                      );
-                      const hasVariants = it.variants.length > 0;
-                      if (hasVariants) {
-                        return (
-                          <div className="text-right">
-                            <div className="font-medium">{sum}</div>
-                            <div className="text-[11px] text-gray-500">
-                              from variants
-                            </div>
-                          </div>
-                        );
-                      }
-                      return (
-                        <form
-                          action={async (fd) => {
-                            "use server";
-                            const q = Number(fd.get("q") ?? it.quantity);
-                            await updateQuantity(it.id, q);
-                          }}
-                          className="inline-flex items-center gap-2"
-                        >
-                          <input
-                            type="number"
-                            name="q"
-                            defaultValue={it.quantity}
-                            min={0}
-                            className="w-20 border rounded px-2 py-1"
-                          />
-                          <button className="text-xs px-2 py-1 border rounded">
-                            Save
-                          </button>
-                        </form>
-                      );
-                    })()}
-                  </td>
-                  <td className="p-2 text-right">
-                    {typeof it.price === "object" ||
-                    typeof it.price === "number"
-                      ? `$${Number(it.price || 0).toFixed(2)}`
-                      : "$0.00"}
-                  </td>
-                  <td className="p-2">{it.location ?? "-"}</td>
-                  <td className="p-2">{it.condition ?? "-"}</td>
-                  <td className="p-2">
-                    <div className="max-w-[220px] truncate">
-                      {Array.isArray(it.tags) ? it.tags.join(", ") : "-"}
-                    </div>
-                  </td>
-                  <td className="p-2">
-                    {low ? (
-                      <span className="text-xs rounded px-2 py-1 bg-red-100 text-red-700">
-                        Low
-                      </span>
-                    ) : (
-                      <span className="text-xs rounded px-2 py-1 bg-green-100 text-green-700">
-                        OK
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-2">
-                    <form
-                      action={async () => {
-                        "use server";
-                        await deleteItem(it.id);
-                      }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/app/items/${it.id}/edit`}
-                          className="text-xs px-2 py-1 border rounded"
-                        >
-                          Edit
-                        </Link>
-                        <button className="text-xs px-2 py-1 border rounded">
-                          Delete
-                        </button>
-                      </div>
-                    </form>
-                  </td>
-                </tr>
-              );
-            })}
-            {!data.length && (
-              <tr>
-                <td className="p-6 text-center text-gray-500" colSpan={10}>
-                  {filter === "low" ? "No low-stock items." : "No items yet."}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
       </div>
     </main>
   );

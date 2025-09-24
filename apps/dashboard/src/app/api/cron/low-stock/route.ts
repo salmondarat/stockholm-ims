@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@stockholm/db";
-import { revalidateTag } from "next/cache";
+import { runLowStockSweep } from "@/lib/lowStockCron";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -31,23 +30,14 @@ export async function GET(req: Request) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const rows = await db.item.findMany();
-  const lows = rows.filter(
-    (x) =>
-      (x.lowStockThreshold ?? 0) > 0 &&
-      x.quantity <= (x.lowStockThreshold ?? 0),
-  );
+  const result = await runLowStockSweep();
 
   // TODO: kirimkan notifikasi di sini kalau mau (email/telegram/slack)
-  // await notify(lows);
-
-  // segarkan badge low-stock (cache tag)
-  revalidateTag("low-stock");
+  // await notify(result.itemIds);
 
   return NextResponse.json({
     ok: true,
-    lowStockCount: lows.length,
-    itemIds: lows.map((i) => i.id),
+    ...result,
     ts: new Date().toISOString(),
   });
 }
