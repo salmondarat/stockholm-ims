@@ -14,7 +14,7 @@ async function sweepLowStock(): Promise<SweepResult> {
   const lows = rows.filter(
     (row) =>
       (row.lowStockThreshold ?? 0) > 0 &&
-      row.quantity <= (row.lowStockThreshold ?? 0),
+      row.quantity <= (row.lowStockThreshold ?? 0)
   );
 
   try {
@@ -45,10 +45,19 @@ export async function runLowStockSweep(): Promise<SweepResult> {
 }
 
 export function ensureLowStockCron() {
-  if (globalThis.__lowStockCronStarted) return;
+  // Singleton pattern: only initialize once per Node.js process
+  if (globalThis.__lowStockCronStarted) {
+    console.log("[low-stock-cron] Cron already initialized, skipping");
+    return;
+  }
 
   const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
-  if (isBuildPhase) return;
+  if (isBuildPhase) {
+    console.log(
+      "[low-stock-cron] Build phase detected, skipping cron initialization"
+    );
+    return;
+  }
 
   const rawInterval = process.env.LOW_STOCK_CRON_INTERVAL_MS;
   const intervalMs = (() => {
@@ -58,8 +67,16 @@ export function ensureLowStockCron() {
   })();
 
   const shouldEnable = process.env.ENABLE_INTERNAL_CRON !== "false";
-  if (!shouldEnable) return;
+  if (!shouldEnable) {
+    console.log("[low-stock-cron] Cron disabled via environment variable");
+    return;
+  }
 
+  console.log(
+    "[low-stock-cron] Initializing cron job with interval:",
+    intervalMs,
+    "ms"
+  );
   globalThis.__lowStockCronStarted = true;
 
   const tick = async () => {
@@ -70,9 +87,12 @@ export function ensureLowStockCron() {
     }
   };
 
+  // Run immediately and then on interval
   tick();
   const timer = setInterval(tick, intervalMs);
   if (typeof timer.unref === "function") timer.unref();
+
+  console.log("[low-stock-cron] Cron job initialized successfully");
 }
 
 export type { SweepResult };

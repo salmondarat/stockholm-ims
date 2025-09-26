@@ -9,7 +9,15 @@ export async function POST(req: Request) {
   }
   const ab = await file.arrayBuffer();
   const wb = XLSX.read(new Uint8Array(ab), { type: "array" });
-  const ws = wb.Sheets[wb.SheetNames[0]];
+  const sheetName = wb.SheetNames[0];
+  if (!sheetName) {
+    return Response.json(
+      { ok: false, error: "Workbook does not contain any sheets" },
+      { status: 400 }
+    );
+  }
+
+  const ws = (wb.Sheets as any)[sheetName] || {};
   const rows = XLSX.utils.sheet_to_json<any>(ws, { defval: "" });
 
   let inserted = 0;
@@ -27,17 +35,29 @@ export async function POST(req: Request) {
     }
     // duplicate checks
     const dupe = await db.item.findFirst({
-      where: { OR: [ { name: { equals: name, mode: "insensitive" } }, { sku: { equals: sku, mode: "insensitive" } } ] },
+      where: {
+        OR: [
+          { name: { equals: name, mode: "insensitive" } },
+          { sku: { equals: sku, mode: "insensitive" } },
+        ],
+      },
       select: { id: true },
     });
-    if (dupe) { skipped++; errors.push({ row: i + 2, error: "Duplicate name or SKU" }); continue; }
+    if (dupe) {
+      skipped++;
+      errors.push({ row: i + 2, error: "Duplicate name or SKU" });
+      continue;
+    }
 
     let categoryId: string | null = null;
     if (r.category) {
       const cat = await db.category.upsert({
         where: { slug: String(r.category).toLowerCase().replace(/\s+/g, "-") },
         update: {},
-        create: { name: String(r.category), slug: String(r.category).toLowerCase().replace(/\s+/g, "-") },
+        create: {
+          name: String(r.category),
+          slug: String(r.category).toLowerCase().replace(/\s+/g, "-"),
+        },
         select: { id: true },
       });
       categoryId = cat.id;

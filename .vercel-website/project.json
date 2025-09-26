@@ -1,0 +1,10 @@
+{
+  "projectId": "prj_VKwmYXu4YLzQwr5kmf4aAvnVs3Qr",
+  "orgId": "team_8xREsxeH3CmVMyU61atpid50",
+  "projectName": "website",
+  "settings": {
+    "rootDirectory": "apps/website",
+    "installCommand": "pnpm install",
+    "buildCommand": "pnpm run build"
+  }
+}

@@ -2,12 +2,8 @@ import PageTransition from "@/components/PageTransition";
 import Sidebar from "@/components/Sidebar";
 import { auth } from "@/lib/auth";
 import ChatWidget from "@/components/ChatWidget";
-import { ensureLowStockCron } from "@/lib/lowStockCron";
-
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-ensureLowStockCron();
 
 export default async function AppLayout({
   children,

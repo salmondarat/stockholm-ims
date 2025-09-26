@@ -101,7 +101,7 @@ export default function EditItemClient({
       const nidx = idx + dir;
       if (nidx < 0 || nidx >= arr.length) return prev;
       const [it] = arr.splice(idx, 1);
-      arr.splice(nidx, 0, it);
+      arr.splice(nidx, 0, it!);
       return arr;
     });
   };

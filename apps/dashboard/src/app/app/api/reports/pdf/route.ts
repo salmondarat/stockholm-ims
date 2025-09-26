@@ -29,11 +29,11 @@ export async function GET() {
 
   const header = ["Name", "SKU", "Qty", "Category", "Price"];
   const col = [margin, margin + 220, margin + 350, margin + 400, margin + 480];
-  page.drawText(header[0], { x: col[0], y, size: 10, font });
-  page.drawText(header[1], { x: col[1], y, size: 10, font });
-  page.drawText(header[2], { x: col[2], y, size: 10, font });
-  page.drawText(header[3], { x: col[3], y, size: 10, font });
-  page.drawText(header[4], { x: col[4], y, size: 10, font });
+  page.drawText(header[0]!, { x: col[0], y, size: 10, font });
+  page.drawText(header[1]!, { x: col[1], y, size: 10, font });
+  page.drawText(header[2]!, { x: col[2], y, size: 10, font });
+  page.drawText(header[3]!, { x: col[3], y, size: 10, font });
+  page.drawText(header[4]!, { x: col[4], y, size: 10, font });
   y -= 14;
 
   for (const it of items) {
@@ -62,7 +62,7 @@ export async function GET() {
   const totalPages = pages.length;
   for (let i = 0; i < totalPages; i++) {
     const p = pages[i];
-    p.drawText(`${i + 1} / ${totalPages}`, { x: width - margin - 40, y: 30, size: 10, font, color: rgb(0.4,0.4,0.5) });
+    p!.drawText(`${i + 1} / ${totalPages}`, { x: width - margin - 40, y: 30, size: 10, font, color: rgb(0.4,0.4,0.5) });
   }
 
   const bytes = await pdf.save();

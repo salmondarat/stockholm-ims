@@ -1,16 +1,28 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import tseslint from "typescript-eslint";
+import { nextJsConfig } from "@repo/eslint-config/next-js";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+const typeCheckedConfigs = tseslint.configs.recommendedTypeChecked.map((config) => ({
+  ...config,
+  files: config.files ?? ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
+}));
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+export default [
+  ...nextJsConfig,
+  ...typeCheckedConfigs,
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
   {
     ignores: [
       "node_modules/**",
@@ -21,5 +33,3 @@ const eslintConfig = [
     ],
   },
 ];
-
-export default eslintConfig;

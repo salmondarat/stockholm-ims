@@ -1,0 +1,10 @@
+{
+  "projectId": "prj_pWImKwFkyW66VmwecoJE1BhtSMrU",
+  "orgId": "team_8xREsxeH3CmVMyU61atpid50",
+  "projectName": "dashboard",
+  "settings": {
+    "rootDirectory": "apps/dashboard",
+    "installCommand": "pnpm install",
+    "buildCommand": "pnpm run build"
+  }
+}

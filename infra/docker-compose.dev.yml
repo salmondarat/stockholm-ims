@@ -22,6 +22,7 @@ services:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: minio12345
     volumes:
-      - ./minio-data:/data
+      - minio-data:/data
 volumes:
   dbdata: {}
+  minio-data: {}

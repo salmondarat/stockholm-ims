@@ -69,6 +69,7 @@ export default function OptionsBuilder({
         const map: Record<string, VariantData> = {};
         for (let i = 0; i < seed.length; i++) {
           const v = seed[i];
+          if (!v) continue;
           const key = variantKey(v.attrs || {});
           const q = Number(v.qty || 0);
           const sku = typeof v.sku === "string" && v.sku ? v.sku : undefined;
@@ -125,7 +126,7 @@ export default function OptionsBuilder({
         res.push({ ...acc });
         return;
       }
-      const { key, values } = attributes[i];
+      const { key, values } = attributes[i]!;
       for (const v of values) {
         acc[key] = v;
         dfs(i + 1, acc);

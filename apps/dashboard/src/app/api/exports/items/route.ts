@@ -96,8 +96,7 @@ export async function GET() {
   }
   const lowStock = data.filter(
     (x) =>
-      (x.lowStockThreshold ?? 0) > 0 &&
-      x.quantity <= (x.lowStockThreshold ?? 0),
+      (x.lowStockThreshold ?? 0) > 0 && x.quantity <= (x.lowStockThreshold ?? 0)
   );
 
   // 2) Siapkan dokumen PDF (A4)
@@ -132,12 +131,42 @@ export async function GET() {
       ];
       const colX = [margin, 150, 230, 300, 340, 390, 470, 520] as const;
 
-      page.drawText(headers[0], { x: colX[0], y, size: 11, font: fontBold });
-      page.drawText(headers[1], { x: colX[1], y, size: 11, font: fontBold });
-      page.drawText(headers[2], { x: colX[2], y, size: 11, font: fontBold });
-      page.drawText(headers[3], { x: colX[3], y, size: 11, font: fontBold });
-      page.drawText(headers[4], { x: colX[4], y, size: 11, font: fontBold });
-      page.drawText(headers[5], { x: colX[5], y, size: 11, font: fontBold });
+      page.drawText(headers[0] ?? "", {
+        x: colX[0],
+        y,
+        size: 11,
+        font: fontBold,
+      });
+      page.drawText(headers[1] ?? "", {
+        x: colX[1],
+        y,
+        size: 11,
+        font: fontBold,
+      });
+      page.drawText(headers[2] ?? "", {
+        x: colX[2],
+        y,
+        size: 11,
+        font: fontBold,
+      });
+      page.drawText(headers[3] ?? "", {
+        x: colX[3],
+        y,
+        size: 11,
+        font: fontBold,
+      });
+      page.drawText(headers[4] ?? "", {
+        x: colX[4],
+        y,
+        size: 11,
+        font: fontBold,
+      });
+      page.drawText(headers[5] ?? "", {
+        x: colX[5],
+        y,
+        size: 11,
+        font: fontBold,
+      });
       y -= 14;
       page.drawLine({
         start: { x: margin, y },
@@ -212,7 +241,7 @@ export async function GET() {
     const qty =
       row.variants.reduce(
         (acc, v) => acc + (Number.isFinite(v.qty) ? v.qty : 0),
-        0,
+        0
       ) ||
       row.quantity ||
       0;

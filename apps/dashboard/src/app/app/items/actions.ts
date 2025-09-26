@@ -730,7 +730,7 @@ export async function updateItemAction(
       if (orderIds.length) {
         for (let i = 0; i < orderIds.length; i++) {
           const mid = orderIds[i];
-          if (removeIds.includes(mid)) continue;
+          if (removeIds.includes(mid!)) continue;
           await tx.itemMedia.update({
             where: { id: mid },
             data: { position: i },

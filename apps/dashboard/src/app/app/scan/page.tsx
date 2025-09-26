@@ -13,8 +13,8 @@ export default function ScanPage() {
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<
-    string | undefined
-  >();
+    string | null
+  >(null);
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -32,7 +32,7 @@ export default function ScanPage() {
         // Prefer back camera on mobile if available
         const backCam =
           cams.find((d) => /back|rear|environment/i.test(d.label)) ?? cams[0];
-        const deviceId = selectedDeviceId ?? backCam?.deviceId;
+        const deviceId = selectedDeviceId ?? backCam?.deviceId ?? null;
         setSelectedDeviceId((prev) => prev ?? deviceId);
 
         await reader.decodeFromVideoDevice(
@@ -74,7 +74,7 @@ export default function ScanPage() {
       codeReaderRef.current = reader;
       reader.reset();
       await reader.decodeFromVideoDevice(
-        id,
+        id ?? null,
         videoRef.current!,
         (result: Result | undefined, err) => {
           if (result?.getText()) {
@@ -107,7 +107,7 @@ export default function ScanPage() {
         {devices.length > 1 && (
           <select
             className="border rounded-md px-3 py-2"
-            value={selectedDeviceId}
+            value={selectedDeviceId || ''}
             onChange={(e) => handleSwitch(e.target.value)}
           >
             {devices.map((d) => (
