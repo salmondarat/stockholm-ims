@@ -37,7 +37,7 @@ function readEnv(): ServerEnv {
   const shouldSoftFail =
     process.env.SKIP_ENV_VALIDATION === "1" ||
     process.env.SKIP_ENV_VALIDATION === "true" ||
-    process.env.NEXT_PHASE === "phase-production-build";
+    (process.env.NODE_ENV !== "production" && process.env.NEXT_PHASE === "phase-production-build");
 
   if (shouldSoftFail) {
     console.warn(
@@ -52,14 +52,9 @@ function readEnv(): ServerEnv {
           : process.env.NODE_ENV === "test"
             ? "test"
             : "development",
-      DATABASE_URL:
-        process.env.DATABASE_URL ??
-        "postgresql://postgres:postgres@localhost:5432/stockholm",
-      NEXTAUTH_SECRET:
-        process.env.NEXTAUTH_SECRET ??
-        "development-nextauth-secret-development",
-      NEXTAUTH_URL:
-        process.env.NEXTAUTH_URL ?? "http://localhost:3000",
+      DATABASE_URL: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/stockholm",
+      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ?? "development-nextauth-secret-development",
+      NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
       LOW_STOCK_CRON_TOKEN: process.env.LOW_STOCK_CRON_TOKEN,
       S3_ENDPOINT: process.env.S3_ENDPOINT,
       S3_REGION: process.env.S3_REGION ?? "us-east-1",
@@ -69,6 +64,19 @@ function readEnv(): ServerEnv {
       S3_FORCE_PATH_STYLE:
         process.env.S3_FORCE_PATH_STYLE === "false" ? "false" : "true",
     };
+
+    // In production, don't fallback required vars - throw to force config
+    if (process.env.NODE_ENV === "production") {
+      if (!fallbackEnv.DATABASE_URL.startsWith('postgresql://') && !fallbackEnv.DATABASE_URL.includes('@')) {
+        throw new Error("Production DATABASE_URL must be a real remote DB, not fallback.");
+      }
+      if (!fallbackEnv.NEXTAUTH_SECRET || fallbackEnv.NEXTAUTH_SECRET.length < 32) {
+        throw new Error("Production NEXTAUTH_SECRET must be set and strong.");
+      }
+      if (!fallbackEnv.NEXTAUTH_URL.startsWith('https://')) {
+        throw new Error("Production NEXTAUTH_URL must be HTTPS production URL.");
+      }
+    }
 
     return fallbackEnv;
   }

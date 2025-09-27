@@ -22,25 +22,30 @@ const providers: Provider[] = [
       password: { label: "Password", type: "password" },
     },
     authorize: async (raw) => {
-      const parsed = CredentialsSchema.safeParse(raw);
-      if (!parsed.success) return null;
-
-      const { email, password } = parsed.data;
-
-      const user = await db.user.findUnique({ where: { email } });
-
-      if (!user?.passwordHash) return null;
-
-      const ok = await bcrypt.compare(password, user.passwordHash);
-      if (!ok) return null;
-
-      // Return user dengan explicit typing
-      return {
-        id: String(user.id),
-        email: user.email,
-        name: user.name ?? null,
-        role: user.role ?? "MEMBER",
-      };
+      try {
+        const parsed = CredentialsSchema.safeParse(raw);
+        if (!parsed.success) return null;
+  
+        const { email, password } = parsed.data;
+  
+        const user = await db.user.findUnique({ where: { email } });
+  
+        if (!user?.passwordHash) return null;
+  
+        const ok = await bcrypt.compare(password, user.passwordHash);
+        if (!ok) return null;
+  
+        // Return user dengan explicit typing
+        return {
+          id: String(user.id),
+          email: user.email,
+          name: user.name ?? null,
+          role: user.role ?? "MEMBER",
+        };
+      } catch (error) {
+        console.error("Auth authorize error:", error);
+        return null;
+      }
     },
   }),
 ];
