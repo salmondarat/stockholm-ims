@@ -9,5 +9,18 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "dist/**", "build/**"]
     }
-  }
+  },
+  "globalEnv": [
+    "NODE_ENV",
+    "NEXT_SERVER_ACTIONS_ALLOWED_ORIGINS",
+    "S3_*",
+    "LOW_STOCK_*",
+    "OPENROUTER_*",
+    "AUTH_*",
+    "GOOGLE_*",
+    "NEXTAUTH_*",
+    "NEXT_PHASE",
+    "ENABLE_INTERNAL_CRON",
+    "SKIP_ENV_VALIDATION"
+  ]
 }

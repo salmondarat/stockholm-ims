@@ -30,15 +30,55 @@ export type ServerEnv = z.infer<typeof ServerEnvSchema>;
 
 function readEnv(): ServerEnv {
   const parsed = ServerEnvSchema.safeParse(process.env);
-  if (!parsed.success) {
-    // cetak error agar build gagal cepat
-    console.error(
-      "❌ Invalid environment variables:",
+  if (parsed.success) {
+    return parsed.data;
+  }
+
+  const shouldSoftFail =
+    process.env.SKIP_ENV_VALIDATION === "1" ||
+    process.env.SKIP_ENV_VALIDATION === "true" ||
+    process.env.NEXT_PHASE === "phase-production-build";
+
+  if (shouldSoftFail) {
+    console.warn(
+      "⚠️  Skipping strict env validation for build phase:",
       parsed.error.flatten().fieldErrors,
     );
-    throw new Error("Invalid environment variables");
+
+    const fallbackEnv: ServerEnv = {
+      NODE_ENV:
+        process.env.NODE_ENV === "production"
+          ? "production"
+          : process.env.NODE_ENV === "test"
+            ? "test"
+            : "development",
+      DATABASE_URL:
+        process.env.DATABASE_URL ??
+        "postgresql://postgres:postgres@localhost:5432/stockholm",
+      NEXTAUTH_SECRET:
+        process.env.NEXTAUTH_SECRET ??
+        "development-nextauth-secret-development",
+      NEXTAUTH_URL:
+        process.env.NEXTAUTH_URL ?? "http://localhost:3000",
+      LOW_STOCK_CRON_TOKEN: process.env.LOW_STOCK_CRON_TOKEN,
+      S3_ENDPOINT: process.env.S3_ENDPOINT,
+      S3_REGION: process.env.S3_REGION ?? "us-east-1",
+      S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+      S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
+      S3_BUCKET: process.env.S3_BUCKET,
+      S3_FORCE_PATH_STYLE:
+        process.env.S3_FORCE_PATH_STYLE === "false" ? "false" : "true",
+    };
+
+    return fallbackEnv;
   }
-  return parsed.data;
+
+  // cetak error agar build gagal cepat
+  console.error(
+    "❌ Invalid environment variables:",
+    parsed.error.flatten().fieldErrors,
+  );
+  throw new Error("Invalid environment variables");
 }
 
 export const env = readEnv();

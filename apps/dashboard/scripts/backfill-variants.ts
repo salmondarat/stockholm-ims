@@ -65,7 +65,7 @@ async function main() {
       base[k] = merged;
     }
 
-    await db.item.update({ where: { id: it.id }, data: { options: base } });
+    await db.item.update({ where: { id: it.id }, data: { options: base as any } });
     updated++;
   }
   console.log(`Done. Migrated ${updated} item(s).`);

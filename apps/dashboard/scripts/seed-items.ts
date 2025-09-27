@@ -11,7 +11,8 @@ function randInt(min: number, max: number) {
 }
 
 function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+  if (arr.length === 0) throw new Error('Cannot pick from empty array');
+  return arr[Math.floor(Math.random() * arr.length)]!;
 }
 
 const adjectives = [
