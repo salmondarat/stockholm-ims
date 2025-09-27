@@ -1,5 +1,4 @@
 {
-  "rootDirectory": "../",
   "buildCommand": "pnpm build --filter=dashboard",
   "installCommand": "pnpm install --no-frozen-lockfile"
 }
