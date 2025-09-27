@@ -27,7 +27,7 @@ model Item {
   photoUrl          String?  @map("photo_url")
   tags              Json?
   // Pricing
-  price             Decimal? @db.Decimal(10, 2)
+  price             Decimal? @db.Decimal(18, 2)
   // Optional structured options (e.g., { color: ["red","blue"], size: ["S","M"] })
   options           Json?
   // Category (subcategory) assignment

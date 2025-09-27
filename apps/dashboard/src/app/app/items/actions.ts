@@ -71,6 +71,8 @@ const s3Enabled = Boolean(
   S3_ENDPOINT && S3_BUCKET && S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY,
 );
 
+const isImmutableFs = process.env.VERCEL === "1";
+
 let s3: S3Client | null = null;
 let bucketEnsured = false;
 function getS3() {
@@ -187,6 +189,11 @@ async function savePhoto(
   }
 
   // Fallback: local filesystem under public/uploads
+  if (isImmutableFs) {
+    throw new Error(
+      "Local file uploads are disabled on this deployment. Configure S3/MinIO to store media.",
+    );
+  }
   await mkdir(UPLOAD_DIR, { recursive: true });
   const buf = Buffer.from(await file.arrayBuffer());
   await writeFile(path.join(UPLOAD_DIR, name), buf);
@@ -794,6 +801,7 @@ async function removeFileIfExists(publicUrl: string | null) {
     }
   }
   // Local file fallback
+  if (isImmutableFs) return;
   const abs = path.join(process.cwd(), "public", publicUrl.replace(/^\/+/, ""));
   try {
     await stat(abs);

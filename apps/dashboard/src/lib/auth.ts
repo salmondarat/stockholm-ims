@@ -8,6 +8,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 
 import { db } from "@stockholm/db";
+import { env } from "@stockholm/config/env";
 
 const CredentialsSchema = z.object({
   email: z.string().email(),
@@ -71,7 +72,7 @@ if (googleClientId && googleClientSecret) {
   );
 }
 
-const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "";
+const authSecret = process.env.AUTH_SECRET?.trim() || env.NEXTAUTH_SECRET;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -84,14 +85,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     sessionToken: {
       name:
         process.env.AUTH_SESSION_COOKIE_NAME ||
-        (process.env.NODE_ENV === "production"
+        (env.NODE_ENV === "production"
           ? "__Secure-stk.session-token"
           : "stk.session-token"),
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: env.NODE_ENV === "production",
       },
     },
   },

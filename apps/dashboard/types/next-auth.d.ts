@@ -1,6 +1,5 @@
-// apps/dashboard/types/next-auth.d.ts
-import { DefaultSession } from "next-auth";
-import { DefaultJWT } from "next-auth/jwt";
+import type { DefaultSession, DefaultUser } from "next-auth";
+import type { DefaultJWT } from "next-auth/jwt";
 
 declare module "next-auth" {
   interface Session {
@@ -10,7 +9,7 @@ declare module "next-auth" {
     } & DefaultSession["user"];
   }
 
-  interface User extends User {
+  interface User extends DefaultUser {
     role: string;
   }
 }

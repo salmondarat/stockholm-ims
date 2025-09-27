@@ -8,10 +8,19 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "dist/**", "build/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": []
     }
   },
   "globalEnv": [
     "NODE_ENV",
+    "DATABASE_URL",
     "NEXT_SERVER_ACTIONS_ALLOWED_ORIGINS",
     "S3_*",
     "LOW_STOCK_*",
@@ -20,6 +29,9 @@
     "GOOGLE_*",
     "NEXTAUTH_*",
     "NEXT_PHASE",
+    "VERCEL_PROJECT_PRODUCTION_URL",
+    "VERCEL_BRANCH_URL",
+    "VERCEL_URL",
     "ENABLE_INTERNAL_CRON",
     "SKIP_ENV_VALIDATION"
   ]

@@ -22,7 +22,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Enable Corepack
         run: corepack enable
@@ -60,6 +60,8 @@ jobs:
 
       - name: Lint + Typecheck (changed only)
         run: pnpm turbo run lint typecheck --filter=...[origin/main] --cache-dir=.turbo
+        env:
+          SKIP_ENV_VALIDATION: '1'
 
       - name: Format check (Prettier, changed files only)
         shell: bash
@@ -82,3 +84,5 @@ jobs:
       - name: Typecheck (fallback)
         if: failure() && github.event_name == 'pull_request'
         run: pnpm -r --parallel typecheck
+        env:
+          SKIP_ENV_VALIDATION: '1'

@@ -11,6 +11,9 @@ importers:
       '@types/node':
         specifier: ^24.3.1
         version: 24.5.2
+      eslint:
+        specifier: ^9.35.0
+        version: 9.35.0(jiti@2.5.1)
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -194,8 +197,21 @@ importers:
   packages/config:
     dependencies:
       zod:
-        specifier: ^3.23.8
-        version: 3.23.8
+        specifier: ^4.1.1
+        version: 4.1.11
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:^
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:^
+        version: link:../typescript-config
+      globals:
+        specifier: ^16.3.0
+        version: 16.3.0
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
 
   packages/db:
     dependencies:
@@ -203,9 +219,18 @@ importers:
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
     devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:^
+        version: link:../eslint-config
+      globals:
+        specifier: ^16.3.0
+        version: 16.3.0
       prisma:
         specifier: ^5.22.0
         version: 5.22.0
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
 
   packages/eslint-config:
     devDependencies:
@@ -245,9 +270,44 @@ importers:
 
   packages/typescript-config: {}
 
-  packages/ui: {}
+  packages/ui:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:^
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:^
+        version: link:../typescript-config
+      '@types/react':
+        specifier: ^18.3.12
+        version: 18.3.24
+      '@types/react-dom':
+        specifier: ^18.3.1
+        version: 18.3.7(@types/react@18.3.24)
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
 
-  packages/utils: {}
+  packages/utils:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:^
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:^
+        version: link:../typescript-config
+      globals:
+        specifier: ^16.3.0
+        version: 16.3.0
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
 
 packages:
 

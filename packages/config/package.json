@@ -6,7 +6,17 @@
   "exports": {
     "./env": "./src/env.ts"
   },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "pnpm exec eslint src --max-warnings=0"
+  },
   "dependencies": {
-    "zod": "^3.23.8"
+    "zod": "^4.1.1"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:^",
+    "@repo/typescript-config": "workspace:^",
+    "globals": "^16.3.0",
+    "typescript": "^5.9.2"
   }
 }

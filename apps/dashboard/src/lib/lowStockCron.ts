@@ -59,6 +59,15 @@ export function ensureLowStockCron() {
     return;
   }
 
+  const isServerless = process.env.VERCEL === "1";
+
+  if (isServerless) {
+    console.log(
+      "[low-stock-cron] Running on Vercel/immutable runtime, skip persistent interval",
+    );
+    return;
+  }
+
   const rawInterval = process.env.LOW_STOCK_CRON_INTERVAL_MS;
   const intervalMs = (() => {
     if (!rawInterval) return 60 * 60 * 1000; // default: 1 hour

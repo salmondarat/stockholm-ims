@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "SKIP_ENV_VALIDATION=1 pnpm build --filter=dashboard",
+  "buildCommand": "pnpm build --filter=dashboard",
   "outputDirectory": "apps/dashboard/.next",
-  "installCommand": "pnpm install --no-frozen-lockfile"
+  "installCommand": "pnpm install --frozen-lockfile"
 }

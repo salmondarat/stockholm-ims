@@ -8,7 +8,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types",
+    "check-types": "pnpm typecheck",
     "typecheck": "pnpm -r --parallel typecheck",
     "prisma:generate": "pnpm -F @stockholm/db run generate",
     "prisma:migrate:dev": "pnpm -F @stockholm/db run migrate:dev",
@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.3.1",
+    "eslint": "^9.35.0",
     "prettier": "^3.6.2",
     "tsx": "^4.20.5",
     "turbo": "^2.5.6",
@@ -27,5 +28,8 @@
     "node": "22.x"
   },
   "dependencies": {},
-  "workspaces": ["apps/*", "packages/*"]
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
