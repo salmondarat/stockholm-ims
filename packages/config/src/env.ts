@@ -78,6 +78,10 @@ function readEnv(): ServerEnv {
     "❌ Invalid environment variables:",
     parsed.error.flatten().fieldErrors,
   );
+  console.error("Missing or invalid vars:", Object.keys(parsed.error.flatten().fieldErrors || {}));
+  console.error("Available env keys during build:", Object.keys(process.env).slice(0, 20)); // First 20 to avoid log flood
+  console.error("NEXT_PHASE:", process.env.NEXT_PHASE);
+  console.error("NODE_ENV:", process.env.NODE_ENV);
   throw new Error("Invalid environment variables");
 }
 
